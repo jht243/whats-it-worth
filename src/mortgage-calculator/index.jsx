@@ -1,14 +1,35 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import useEmblaCarousel from "embla-carousel-react";
-import { useWidgetProps } from "../use-widget-props";
-import { useMaxHeight } from "../use-max-height";
-import { Star, ExternalLink, Calendar, DollarSign, Share2, ChevronLeft, ChevronRight, MessageCircle } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
-import settlementsData from "./settlements.json";
 
-const TRACK_URL = 'https://class-action-settlement-finder.onrender.com/api/track';
-const TURNSTILE_SITE_KEY = '0x4AAAAAAB88oeIlUFfNX1o7';
+function HelloWorld() {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      fontFamily: 'system-ui, -apple-system, sans-serif'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        padding: '2rem'
+      }}>
+        <h1 style={{ fontSize: '2rem', marginBottom: '1rem' }}>
+          🎉 Hello World!
+        </h1>
+        <p style={{ color: '#666' }}>
+          Mortgage Calculator Widget is Loading Successfully!
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const root = document.getElementById("mortgage-calculator-root");
+if (!root) {
+  throw new Error("Root element not found");
+}
+createRoot(root).render(<HelloWorld />);
 
 // Load Turnstile script
 if (typeof window !== 'undefined' && !document.getElementById('turnstile-script')) {
