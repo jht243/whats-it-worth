@@ -84,9 +84,8 @@
       }
 
       .collapsible-content {
-        padding: 0 20px 22px;
-        margin-top: 12px;
-        border-top: 1px solid rgba(148, 163, 184, 0.22);
+        padding: 0 20px 20px;
+        margin-top: 0;
       }
 
       .section-block {
@@ -103,7 +102,7 @@
       }
 
       details.section-block > summary {
-        padding: 18px 20px;
+        padding: 20px;
       }
 
       details.section-block > .collapsible-content {
@@ -240,8 +239,27 @@
       .carousel-slide {
         min-width: 100%;
         padding: 6px 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      .slide-content {
+        width: 100%;
         display: grid;
-        gap: 18px;
+        gap: 24px;
+      }
+
+      .slide-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .slide-header p {
+        margin: 8px 0 0;
+        color: rgba(226, 232, 240, 0.65);
+        font-size: 14px;
       }
 
       .result-card {
@@ -412,173 +430,185 @@
   </head>
   <body>
     <div class="app">
-      <header>
-        <h1>Mortgage payment estimator</h1>
-        <p>Compare loan programs, see monthly costs, and preview payoff timing. Adjust the inputs to explore scenarios.</p>
-      </header>
-
-      <section class="section-block">
-        <div class="section-title">Loan basics</div>
-        <div class="grid">
-          <label>
-            Loan program
-            <select id="loan_type">
-              <option value="conventional">Conventional</option>
-              <option value="FHA">FHA</option>
-              <option value="VA">VA</option>
-              <option value="USDA">USDA</option>
-            </select>
-          </label>
-          <label>
-            Home value ($)
-            <input type="number" id="home_value" min="0" step="1000" />
-          </label>
-          <label>
-            Down payment ($)
-            <input type="number" id="down_payment_value" min="0" step="1000" />
-          </label>
-          <label class="percent-field">
-            Rate (APR %)
-            <input type="number" id="rate_apr" min="0" step="0.01" />
-          </label>
-          <label>
-            Term (years)
-            <input type="number" id="term_years" min="1" step="1" />
-          </label>
-        </div>
-      </section>
-
-      <section class="section-block">
-        <div class="section-title">My information</div>
-        <div class="grid">
-          <label>
-            ZIP code
-            <input type="text" id="zip_code" inputmode="numeric" pattern="\d*" maxlength="9" placeholder="e.g. 94043" />
-          </label>
-          <label>
-            Credit score
-            <select id="credit_score">
-              <option value="">Select</option>
-              <option value="760+">760+</option>
-              <option value="720-759">720-759</option>
-              <option value="680-719">680-719</option>
-              <option value="640-679">640-679</option>
-              <option value="600-639">600-639</option>
-              <option value="<600">Below 600</option>
-            </select>
-          </label>
-        </div>
-      </section>
-
-      <details class="section-block collapsible">
-        <summary class="section-summary">Property information</summary>
-        <div class="collapsible-content">
-          <div class="grid">
-            <label class="percent-field">
-              Property tax (% of value)
-              <input type="number" id="property_tax_input" min="0" step="0.01" />
-            </label>
-            <label>
-              Homeowners insurance ($/yr)
-              <input type="number" id="homeowners_insurance_yearly" min="0" step="50" />
-            </label>
-            <label>
-              HOA dues ($/mo)
-              <input type="number" id="hoa_monthly" min="0" step="10" />
-            </label>
-          </div>
-        </div>
-      </details>
-
-      <details class="section-block collapsible">
-        <summary class="section-summary">Mortgage insurance & fees</summary>
-        <div class="collapsible-content">
-          <div class="grid">
-            <label class="percent-field">
-              PMI (% annual, conventional)
-              <input type="number" id="pmi_pct" min="0" step="0.01" />
-            </label>
-            <label class="percent-field" data-mi-only>
-              Annual MI fee (% of balance)
-              <input type="number" id="annual_mi_pct" min="0" step="0.01" />
-            </label>
-            <label class="percent-field">
-              Upfront fee (% base loan)
-              <input type="number" id="upfront_fee_pct" min="0" step="0.01" />
-              <div class="checkbox-row" style="margin-top: 8px;">
-                <input type="checkbox" id="finance_upfront_fee" />
-                <span style="font-size: 12px; color: rgba(226, 232, 240, 0.72);">Add fee to principal balance</span>
-              </div>
-            </label>
-          </div>
-        </div>
-      </details>
-
-      <details class="section-block advanced-options">
-        <summary class="section-summary">Advanced options</summary>
-        <div class="collapsible-content">
-          <div class="grid">
-            <label>
-              First payment month
-              <input type="number" id="start_month" min="1" max="12" step="1" />
-            </label>
-            <label>
-              First payment year
-              <input type="number" id="start_year" min="2024" step="1" />
-            </label>
-            <label>
-              Extra payment ($/mo)
-              <input type="number" id="extra_principal_monthly" min="0" step="50" />
-            </label>
-            <label>
-              Extra starts at month index
-              <input type="number" id="extra_start_month_index" min="0" step="1" />
-            </label>
-          </div>
-        </div>
-      </details>
-
-      <div class="actions">
-        <span>Updates automatically as you edit.</span>
-        <button class="secondary" id="resetBtn" type="button">Reset defaults</button>
-      </div>
-
       <section class="result-carousel">
         <button class="carousel-nav" id="cardPrev" aria-label="Previous card">&#x2039;</button>
         <div class="carousel-window">
           <div class="carousel-track" id="resultTrack">
             <div class="carousel-slide" data-card="summary">
-              <div class="cards">
-                <div class="result-card primary" id="monthlyPaymentCard">
-                  <span class="label">Monthly payment (month 0)</span>
-                  <span class="value" id="total_monthly_0">$0</span>
-                  <span class="hint">Includes P&I, MI, taxes, insurance, HOA (excludes extra principal).</span>
+              <div class="slide-content">
+                <header class="slide-header">
+                  <h2>Mortgage Calculator</h2>
+                  <p>Compare loan programs, see monthly costs, and preview payoff timing. Adjust the inputs to explore scenarios.</p>
+                </header>
+
+                <section class="section-block">
+                  <div class="section-title">Loan basics</div>
+                  <div class="grid">
+                    <label>
+                      Loan program
+                      <select id="loan_type">
+                        <option value="conventional">Conventional</option>
+                        <option value="FHA">FHA</option>
+                        <option value="VA">VA</option>
+                        <option value="USDA">USDA</option>
+                      </select>
+                    </label>
+                    <label>
+                      Home value ($)
+                      <input type="number" id="home_value" min="0" step="1000" />
+                    </label>
+                    <label>
+                      Down payment ($)
+                      <input type="number" id="down_payment_value" min="0" step="1000" />
+                    </label>
+                    <label class="percent-field">
+                      Rate (APR %)
+                      <input type="number" id="rate_apr" min="0" step="0.01" />
+                    </label>
+                    <label>
+                      Term (years)
+                      <input type="number" id="term_years" min="1" step="1" />
+                    </label>
+                  </div>
+                </section>
+
+                <details class="section-block collapsible" id="myInformation">
+                  <summary class="section-summary">My information</summary>
+                  <div class="collapsible-content">
+                    <div class="grid">
+                      <label>
+                        ZIP code
+                        <input type="text" id="zip_code" inputmode="numeric" pattern="\d*" maxlength="9" placeholder="e.g. 94043" />
+                      </label>
+                      <label>
+                        Credit score
+                        <select id="credit_score">
+                          <option value="">Select</option>
+                          <option value="760+">760+</option>
+                          <option value="720-759">720-759</option>
+                          <option value="680-719">680-719</option>
+                          <option value="640-679">640-679</option>
+                          <option value="600-639">600-639</option>
+                          <option value="<600">Below 600</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="section-block collapsible">
+                  <summary class="section-summary">Property information</summary>
+                  <div class="collapsible-content">
+                    <div class="grid">
+                      <label class="percent-field">
+                        Property tax (% of value)
+                        <input type="number" id="property_tax_input" min="0" step="0.01" />
+                      </label>
+                      <label>
+                        Homeowners insurance ($/yr)
+                        <input type="number" id="homeowners_insurance_yearly" min="0" step="50" />
+                      </label>
+                      <label>
+                        HOA dues ($/mo)
+                        <input type="number" id="hoa_monthly" min="0" step="10" />
+                      </label>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="section-block collapsible">
+                  <summary class="section-summary">Mortgage insurance & fees</summary>
+                  <div class="collapsible-content">
+                    <div class="grid">
+                      <label class="percent-field">
+                        PMI (% annual, conventional)
+                        <input type="number" id="pmi_pct" min="0" step="0.01" />
+                      </label>
+                      <label class="percent-field" data-mi-only>
+                        Annual MI fee (% of balance)
+                        <input type="number" id="annual_mi_pct" min="0" step="0.01" />
+                      </label>
+                      <label class="percent-field">
+                        Upfront fee (% base loan)
+                        <input type="number" id="upfront_fee_pct" min="0" step="0.01" />
+                        <div class="checkbox-row" style="margin-top: 8px;">
+                          <input type="checkbox" id="finance_upfront_fee" />
+                          <span style="font-size: 12px; color: rgba(226, 232, 240, 0.72);">Add fee to principal balance</span>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </details>
+
+                <details class="section-block advanced-options">
+                  <summary class="section-summary">Advanced options</summary>
+                  <div class="collapsible-content">
+                    <div class="grid">
+                      <label>
+                        First payment month
+                        <input type="number" id="start_month" min="1" max="12" step="1" />
+                      </label>
+                      <label>
+                        First payment year
+                        <input type="number" id="start_year" min="2024" step="1" />
+                      </label>
+                      <label>
+                        Extra payment ($/mo)
+                        <input type="number" id="extra_principal_monthly" min="0" step="50" />
+                      </label>
+                      <label>
+                        Extra starts at month index
+                        <input type="number" id="extra_start_month_index" min="0" step="1" />
+                      </label>
+                    </div>
+                  </div>
+                </details>
+
+                <div class="actions">
+                  <span>Updates automatically as you edit.</span>
+                  <button class="secondary" id="resetBtn" type="button">Reset defaults</button>
                 </div>
-                <div class="result-card secondary">
-                  <span class="label">Scheduled principal & interest</span>
-                  <span class="value" id="p_and_i">$0</span>
-                  <span class="hint">Level payment before extra principal or add-ons.</span>
-                </div>
-                <div class="result-card secondary">
-                  <span class="label">Total interest over loan</span>
-                  <span class="value" id="total_interest">$0</span>
-                  <span class="hint" id="interest_hint"></span>
-                </div>
-                <div class="result-card secondary">
-                  <span class="label">Estimated payoff date</span>
-                  <span class="value" id="payoff_date">—</span>
-                  <span class="hint" id="term_hint"></span>
+
+                <div class="cards">
+                  <div class="result-card primary" id="monthlyPaymentCard">
+                    <span class="label">Monthly payment (month 0)</span>
+                    <span class="value" id="total_monthly_0">$0</span>
+                    <span class="hint">Includes P&I, MI, taxes, insurance, HOA (excludes extra principal).</span>
+                  </div>
+                  <div class="result-card secondary">
+                    <span class="label">Scheduled principal & interest</span>
+                    <span class="value" id="p_and_i">$0</span>
+                    <span class="hint">Level payment before extra principal or add-ons.</span>
+                  </div>
+                  <div class="result-card secondary">
+                    <span class="label">Total interest over loan</span>
+                    <span class="value" id="total_interest">$0</span>
+                    <span class="hint" id="interest_hint"></span>
+                  </div>
+                  <div class="result-card secondary">
+                    <span class="label">Estimated payoff date</span>
+                    <span class="value" id="payoff_date">—</span>
+                    <span class="hint" id="term_hint"></span>
+                  </div>
                 </div>
               </div>
-              <section class="summary" id="summaryText"></section>
             </div>
             <div class="carousel-slide" data-card="amortization">
-              <details class="section-block" open>
-                <summary>Amortization & totals</summary>
-                <div id="totalsBreakdown" style="margin-top: 14px; font-size: 13px; line-height: 1.8;"></div>
-                <div id="schedulePreview"></div>
-                <div class="schedule-note" id="scheduleNote"></div>
-              </details>
+              <div class="slide-content">
+                <header class="slide-header">
+                  <h2>Amortization & totals</h2>
+                  <p>Dig into the lifetime cost breakdown and the first year of the schedule.</p>
+                </header>
+                <details class="section-block" open>
+                  <summary>Lifetime totals</summary>
+                  <div id="totalsBreakdown" style="margin-top: 14px; font-size: 13px; line-height: 1.8;"></div>
+                </details>
+                <details class="section-block" open>
+                  <summary>Schedule preview</summary>
+                  <div id="schedulePreview"></div>
+                  <div class="schedule-note" id="scheduleNote"></div>
+                </details>
+              </div>
             </div>
           </div>
         </div>
@@ -1092,7 +1122,6 @@
           payoff_date: $("payoff_date"),
           interest_hint: $("interest_hint"),
           term_hint: $("term_hint"),
-          summaryText: $("summaryText"),
           totalsBreakdown: $("totalsBreakdown"),
           schedulePreview: $("schedulePreview"),
           scheduleNote: $("scheduleNote"),
@@ -1186,14 +1215,6 @@
           outputs.term_hint.textContent = `Original term ${normalized.term_years} yrs — paid off in ${yearsElapsed.toFixed(
             1
           )} yrs (${monthsElapsed} months).`;
-
-          outputs.summaryText.innerHTML = `
-            For a <strong>${formatCurrency(derived.loan_amount_base)}</strong> ${normalized.loan_type.toUpperCase()} loan at
-            <strong>${(normalized.rate_apr * 100).toFixed(3)}% APR</strong>, your first full payment is
-            <strong>${formatCurrency(derived.total_monthly_0)}</strong> including taxes, insurance, and HOA. With the current
-            assumptions you would pay <strong>${formatCurrency(totals.total_interest)}</strong> in interest and
-            <strong>${formatCurrency(totals.total_of_payments)}</strong> total over the life of the loan.
-          `;
 
           outputs.totalsBreakdown.innerHTML = `
             <div>Tax & insurance: <strong>${formatCurrency(totals.total_tax + totals.total_ins)}</strong></div>
