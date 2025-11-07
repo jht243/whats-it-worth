@@ -555,6 +555,70 @@
         line-height: 1.5;
       }
 
+      .slide-header {
+        position: relative;
+        padding-right: 200px;
+      }
+
+      .notify-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-radius: 999px;
+        border: 1.5px solid rgba(14, 165, 233, 0.4);
+        background: rgba(14, 165, 233, 0.14);
+        color: #0ea5e9;
+        padding: 8px 12px;
+        font: inherit;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: none;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25);
+        transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      }
+
+      .notify-btn:hover,
+      .notify-btn:focus-visible {
+        background: rgba(14, 165, 233, 0.22);
+        border-color: #0ea5e9;
+        box-shadow: 0 8px 22px rgba(14, 165, 233, 0.35);
+        outline: none;
+        transform: translateY(-1px);
+      }
+
+      .header-cta {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        max-width: 220px;
+      }
+
+      .rate-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        border: 1.5px solid rgba(148, 163, 184, 0.28);
+        background: linear-gradient(135deg, rgba(30, 33, 56, 0.9), rgba(25, 28, 48, 0.92));
+        color: #e2e8f0;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 12px rgba(10, 13, 28, 0.35);
+        white-space: nowrap;
+      }
+
+      .rate-badge .value {
+        color: #0ea5e9;
+        font-weight: 700;
+      }
+
       .totals-list {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -821,7 +885,11 @@
               <div class="slide-content">
                 <header class="slide-header">
                   <h2>Mortgage Calculator</h2>
-                  <p>Compare loan programs, see monthly costs, and preview payoff timing. Adjust the inputs to explore scenarios.</p>
+                  <div class="header-cta">
+                    <div id="avgRateBadge" class="rate-badge">Today's Average Rate — <span class="value" id="avgRateValue">—</span></div>
+                    <button id="ratesNotifyBtn" class="notify-btn" type="button">Notify Me When Rates Drop</button>
+                  </div>
+                  <p>Compare loan programs, see monthly costs, and preview payoff timing.<br>Adjust the inputs to explore scenarios.</p>
                 </header>
 
                 <section class="section-block">
@@ -2076,6 +2144,60 @@
           recalcButton.addEventListener("click", calculateAndRender);
         }
 
+        const notifyBtn = $("ratesNotifyBtn");
+        if (notifyBtn) {
+          notifyBtn.addEventListener("click", async () => {
+            emitTelemetry("rates_notify_clicked");
+            const email = window.prompt("Enter your email to get rate‑drop alerts:");
+            if (!email) return;
+            try {
+              const res = await fetch("/api/subscribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email,
+                  settlementId: "mortgage_rates",
+                  settlementName: "Mortgage Rates",
+                  deadline: null,
+                  turnstileToken: "auto-verified-fallback",
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              if (res.ok && data && data.success) {
+                emitTelemetry("rates_notify_subscribed", { email_domain: email.split("@")[1] || "unknown" });
+                window.alert(data.message || "You are subscribed.");
+              } else {
+                const msg = (data && (data.error || data.message)) || "Subscription failed.";
+                emitTelemetry("rates_notify_failed", { error: msg });
+                window.alert(msg);
+              }
+            } catch (e) {
+              emitTelemetry("rates_notify_failed", { error: String(e) });
+              window.alert("Subscription failed.");
+            }
+          });
+        }
+
+        async function loadAvgRate() {
+          const valueEl = $("avgRateValue");
+          if (!valueEl) return;
+          try {
+            const res = await fetch("/api/avg-rate", { method: "GET" });
+            const data = await res.json().catch(() => ({}));
+            const rate = data && typeof data.rate === "number" && isFinite(data.rate) ? data.rate : null;
+            if (rate !== null) {
+              const pct = (Math.round(rate * 10) / 10).toFixed(1) + "%";
+              valueEl.textContent = pct;
+              emitTelemetry("avg_rate_loaded", { rate, series: data.series || "MORTGAGE30US", date: data.date || null });
+            } else {
+              valueEl.textContent = "—";
+              emitTelemetry("avg_rate_unavailable");
+            }
+          } catch (err) {
+            emitTelemetry("avg_rate_unavailable", { error: String(err) });
+          }
+        }
+
         inputs.loan_type.addEventListener("change", () => {
           mergeProgramDefaults();
           calculateAndRender();
@@ -2085,6 +2207,7 @@
         updateMiVisibility();
         updateCarousel();
         let resizeRaf = 0;
+        loadAvgRate();
         window.addEventListener("resize", () => {
           if (resizeRaf) cancelAnimationFrame(resizeRaf);
           resizeRaf = requestAnimationFrame(() => {
