@@ -318,19 +318,29 @@ function createMortgageCalculatorServer(): Server {
       let displayRate: number | null = null;
       if (fredRateCache && fredRateCache.payload && typeof fredRateCache.payload.ratePercent === "number") {
         displayRate = fredRateCache.payload.ratePercent;
+        console.log(`[MCP Injection] Using cached rate: ${displayRate}%`);
       } else {
         const latest = await fetchFredLatestRate();
         if (latest) {
           displayRate = Math.round((latest.adjusted) * 10) / 10;
+          console.log(`[MCP Injection] Fetched fresh rate: ${displayRate}%`);
+        } else {
+          console.log(`[MCP Injection] FRED fetch failed, leaving blank`);
         }
       }
       // Only inject if we have a valid live rate. Otherwise leave blank.
       if (displayRate != null && Number.isFinite(displayRate)) {
         const rateText = `${displayRate}%`;
+        const beforeLength = htmlToSend.length;
         htmlToSend = htmlToSend.replace(
           /(<span\s+class="rate-num">)([^<]*?)(<\/span>)/,
           (_m: any, p1: string, _p2: string, p3: string) => `${p1}${rateText}${p3}`
         );
+        const afterLength = htmlToSend.length;
+        const replaced = beforeLength !== afterLength || htmlToSend.includes(`rate-num">${rateText}`);
+        console.log(`[MCP Injection] Injected "${rateText}", replacement success: ${replaced}`);
+      } else {
+        console.log(`[MCP Injection] No valid rate, sending blank badge`);
       }
 
       return {
