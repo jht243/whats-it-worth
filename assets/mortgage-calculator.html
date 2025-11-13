@@ -1378,7 +1378,7 @@
             down_payment_pct: effectiveDpPct,
           };
 
-          const openPrintView = (params, monthlyPayment, chartPngDataUrl) => {
+          const openPrintView = (params, monthlyPayment, chartPngDataUrl, preWin) => {
             try {
               const fmt = (n) => {
                 try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(n||0)); } catch (_) { return String(n); }
@@ -1413,14 +1413,46 @@
                 ${chartPngDataUrl ? `<img alt="Payment breakdown" src="${chartPngDataUrl}" />` : ''}
                 <script>window.onload=function(){try{window.focus();window.print();}catch(e){} setTimeout(function(){try{window.close()}catch(_){}} ,1500)}<\/script>
               </body></html>`;
-              const blob = new Blob([html], { type: 'text/html' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url; a.target = '_blank'; a.rel = 'noopener';
-              document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(), 0);
-              setTimeout(()=>URL.revokeObjectURL(url), 10000);
-              try { emitTelemetry('export_print_view_opened', { withChart: !!chartPngDataUrl }); } catch (_) {}
-              console.debug('Print: opened print view');
+              if (preWin && !preWin.closed) {
+                try {
+                  preWin.document.open();
+                  preWin.document.write(html);
+                  preWin.document.close();
+                  try { emitTelemetry('export_print_view_opened', { withChart: !!chartPngDataUrl, mode: 'preopened' }); } catch (_) {}
+                  console.debug('Print: wrote into pre-opened window');
+                } catch (we) {
+                  console.debug('Print: failed to write into pre-opened window, falling back', we);
+                  const blob = new Blob([html], { type: 'text/html' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url; a.target = '_blank'; a.rel = 'noopener';
+                  document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(), 0);
+                  try {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none'; iframe.width = '0'; iframe.height = '0';
+                    iframe.src = url; document.body.appendChild(iframe);
+                    setTimeout(()=>iframe.remove(), 5000);
+                  } catch (_) {}
+                  setTimeout(()=>URL.revokeObjectURL(url), 10000);
+                  try { emitTelemetry('export_print_view_opened', { withChart: !!chartPngDataUrl, mode: 'blob' }); } catch (_) {}
+                  console.debug('Print: opened print view via blob URL');
+                }
+              } else {
+                const blob = new Blob([html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.target = '_blank'; a.rel = 'noopener';
+                document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(), 0);
+                try {
+                  const iframe = document.createElement('iframe');
+                  iframe.style.display = 'none'; iframe.width = '0'; iframe.height = '0';
+                  iframe.src = url; document.body.appendChild(iframe);
+                  setTimeout(()=>iframe.remove(), 5000);
+                } catch (_) {}
+                setTimeout(()=>URL.revokeObjectURL(url), 10000);
+                try { emitTelemetry('export_print_view_opened', { withChart: !!chartPngDataUrl, mode: 'blob' }); } catch (_) {}
+                console.debug('Print: opened print view via blob URL');
+              }
               try { showToast('info', 'Opened Print View'); } catch (_) {}
               return true;
             } catch (e) {
@@ -2492,12 +2524,20 @@
               __printBeforeFired = true;
               try { emitTelemetry('export_print_before', { id }); } catch (_) {}
               console.debug('Print: beforeprint', { id });
+              try {
+                const w = (globalThis as any).__preWinRef;
+                if (w && !w.closed) { try { w.close(); } catch (_) {} (globalThis as any).__preWinRef = null; }
+              } catch (_) {}
             };
             const after = () => {
               afterFired = true;
               __printAfterFired = true;
               try { emitTelemetry('export_print_after', { id }); } catch (_) {}
               console.debug('Print: afterprint', { id });
+              try {
+                const w = (globalThis as any).__preWinRef;
+                if (w && !w.closed) { try { w.close(); } catch (_) {} (globalThis as any).__preWinRef = null; }
+              } catch (_) {}
               window.removeEventListener('beforeprint', before);
               window.removeEventListener('afterprint', after);
             };
@@ -2560,6 +2600,17 @@
             bindPrintLifecycle();
             try { showToast('info', 'Opening print dialog'); } catch (_) {}
             try {
+              // Pre-open a window to satisfy popup blockers; we will use it for Print View if needed
+              let preWin = null;
+              try {
+                preWin = window.open('', '_blank', 'noopener');
+                (globalThis).__preWinRef = preWin;
+                try { emitTelemetry('export_print_preopen', { ok: !!preWin }); } catch (_) {}
+                console.debug('Print: pre-open window', { ok: !!preWin });
+              } catch (pe) {
+                try { emitTelemetry('export_print_preopen_error', { error: String(pe && pe.message || pe) }); } catch (_) {}
+                console.debug('Print: pre-open window failed', pe);
+              }
               // Prepare data for potential fallback
               const params = readParams();
               const calc = mortgageCalculator.calculate_mortgage(params);
@@ -2581,7 +2632,7 @@
                 if (!__printBeforeFired && !__printAfterFired) {
                   try { emitTelemetry('export_print_fallback_print_view', {}); } catch (_) {}
                   console.debug('Print: fallback to Print View');
-                  openPrintView(params, monthlyPayment, chartPngDataUrl);
+                  openPrintView(params, monthlyPayment, chartPngDataUrl, preWin);
                 }
               }, 900);
             } catch (err) {
@@ -2596,7 +2647,8 @@
                 const canvas = document.getElementById('breakdownChart');
                 let chartPngDataUrl = undefined;
                 if (canvas && canvas.toDataURL) { try { chartPngDataUrl = canvas.toDataURL('image/png'); } catch (_) {} }
-                openPrintView(params, monthlyPayment, chartPngDataUrl);
+                let preWin = null; try { preWin = (globalThis).__preWinRef; } catch (_) {}
+                openPrintView(params, monthlyPayment, chartPngDataUrl, preWin);
               } catch (_) {
                 try { showToast('error', 'Print failed — use Cmd/Ctrl+P'); } catch (_) {}
               }
@@ -2604,6 +2656,40 @@
           };
           exportBtn.addEventListener('click', onExportClick);
           try { globalThis.__exportPdf = onExportClick; } catch (_) {}
+
+          // Add a distinct "Print View" button for testing
+          try {
+            if (!document.getElementById('printViewBtn')) {
+              const pvBtn = document.createElement('button');
+              pvBtn.id = 'printViewBtn';
+              pvBtn.type = 'button';
+              pvBtn.textContent = 'Print View';
+              try { pvBtn.className = exportBtn.className || ''; } catch (_) {}
+              const parent = exportBtn.parentElement || exportBtn.closest('div') || document.body;
+              parent.appendChild(pvBtn);
+
+              const onPrintViewClick = () => {
+                try { emitTelemetry('export_print_view_button_click', {}); } catch (_) {}
+                console.debug('Print View: button click');
+                try {
+                  const params = readParams();
+                  const calc = mortgageCalculator.calculate_mortgage(params);
+                  const d = calc.derived;
+                  const monthlyPayment = Math.round((d.p_and_i + d.tax_monthly + d.ins_monthly + d.hoa_monthly + d.monthly_mi_initial) * 100) / 100;
+                  const canvas = document.getElementById('breakdownChart');
+                  let chartPngDataUrl = undefined;
+                  if (canvas && canvas.toDataURL) { try { chartPngDataUrl = canvas.toDataURL('image/png'); } catch (_) {} }
+                  let preWin = null; try { preWin = window.open('', '_blank', 'noopener'); } catch (_) {}
+                  openPrintView(params, monthlyPayment, chartPngDataUrl, preWin);
+                } catch (e) {
+                  try { emitTelemetry('export_print_view_button_error', { error: String(e && e.message || e) }); } catch (_) {}
+                  console.error('Print View: click error', e);
+                }
+              };
+              pvBtn.addEventListener('click', onPrintViewClick);
+              try { globalThis.__openPrintView = onPrintViewClick; } catch (_) {}
+            }
+          } catch (_) {}
         }
 
         // Feedback modal & tracking
