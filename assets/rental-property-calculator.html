@@ -8,6 +8,10 @@
     <meta property="og:description" content="Human‑readable rental property calculator that helps you calculate multi‑family returns and single‑family ROI: cash‑on‑cash return, internal rate of return (IRR), capitalization rate (cap rate), NOI, expenses, and 20‑year projections." />
     <meta name="keywords" content="rental property calculator, calculate return on rental properties, ROI on rental property, calculate multi family returns, cash on cash return, IRR, cap rate, net operating income, rental analysis, 20 year investment summary" />
     <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
       :root {
         color-scheme: dark;
         font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -208,6 +212,9 @@
         touch-action: auto;
         overscroll-behavior: auto;
         -webkit-overflow-scrolling: touch;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
       }
 
       details.section-block {
@@ -232,6 +239,10 @@
         gap: 14px;
         grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         touch-action: auto;
+      }
+
+      .grid > * {
+        min-width: 0;
       }
 
       .grid.duo-columns {
