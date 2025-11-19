@@ -1690,10 +1690,6 @@
     </div>
   </details>
 
-  <div class="button-row">
-    <button type="button" class="cta-button primary" id="showBreakdownBtn">See Advanced Calculations &rarr;</button>
-  </div>
-
   <!-- Restore original loan basics block -->
   <section class="section-block is-hidden" data-openai-component="loan-input-form" aria-hidden="true">
     <div class="section-title">Loan basics</div>
@@ -1888,7 +1884,7 @@
                     </div>
                     <span id="total_monthly_0" style="display:none"></span>
                   </div>
-                  <div class="quick-metrics is-hidden" data-openai-component="quick-metrics" aria-hidden="true">
+                  <div class="quick-metrics" data-openai-component="quick-metrics">
                     <div class="result-card secondary">
                       <span class="label">Principal & interest</span>
                       <span class="value" id="p_and_i">$0</span>
@@ -1906,7 +1902,7 @@
                     </div>
                   </div>
 
-                  <a class="cta-pill" id="seeAdvanced" href="#">See Advanced Calculations
+                  <a class="cta-pill" id="showBreakdownBtn" href="#">See Advanced Calculations
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
                   </a>
                   <div class="actions">
