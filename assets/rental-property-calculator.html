@@ -923,6 +923,13 @@
         font-size: 13px;
         line-height: 1.5;
       }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
       .rate-indicator {
         position: absolute;
         top: 4px;
@@ -930,6 +937,47 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
+      }
+
+      .button-row {
+        text-align: center;
+        padding-top: 8px;
+      }
+
+      .cta-button {
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        display: inline-block;
+        letter-spacing: 0.05em;
+      }
+
+      .cta-button.primary {
+        background: #0ea5e9;
+        color: #0f172a;
+        border-color: #0ea5e9;
+      }
+
+      .cta-button.primary:hover {
+        background: #38bdf8;
+        border-color: #38bdf8;
+      }
+
+      .cta-button.secondary {
+        background: rgba(71, 85, 105, 0.35);
+        border: 1px solid rgba(100, 116, 139, 0.6);
+        color: #cbd5e1;
+        font-size: 12px;
+        padding: 8px 16px;
+      }
+
+      .cta-button.secondary:hover {
+        background: rgba(71, 85, 105, 0.6);
+        border-color: rgba(100, 116, 139, 0.8);
       }
       .rate-refresh {
         display: none !important;
@@ -1633,6 +1681,10 @@
     </div>
   </details>
 
+  <div class="button-row">
+    <button type="button" class="cta-button primary" id="showBreakdownBtn">See Advanced Calculations &rarr;</button>
+  </div>
+
   <!-- Restore original loan basics block -->
   <section class="section-block is-hidden" data-openai-component="loan-input-form" aria-hidden="true">
     <div class="section-title">Loan basics</div>
@@ -1860,7 +1912,12 @@
             </div>
             <div class="view-container is-hidden" id="breakdownView">
             <header>
-              <h2>Outputs</h2>
+              <div class="header-row">
+                <h2>Outputs</h2>
+                <div class="button-row" id="showSummaryBtn">
+                  <button type="button" class="cta-button secondary">&larr; Back to Inputs</button>
+                </div>
+              </div>
               <p>Key performance metrics with first-year details.</p>
             </header>
             <div class="section-block">
@@ -1912,7 +1969,12 @@
         </div>
         <div class="view-container is-hidden" id="amortizationView">
             <header>
-              <h2>Breakdown Over Time (Year-by-Year)</h2>
+              <div class="header-row">
+                <h2>Breakdown Over Time (Year-by-Year)</h2>
+                <div class="button-row" id="showAmortizationSummaryBtn">
+                  <button type="button" class="cta-button secondary">&larr; Back to Inputs</button>
+                </div>
+              </div>
               <p>Annual rollup of income, expenses, cash flow, returns, and equity.</p>
             </header>
             <section class="section-block">
@@ -4156,16 +4218,19 @@ if (outputs.term_hint) outputs.term_hint.textContent = `Original term ${normaliz
         const amortizationView = document.getElementById('amortizationView');
         const showBreakdownBtn = document.getElementById('showBreakdownBtn');
         const showSummaryBtn = document.getElementById('showSummaryBtn');
+        const showAmortizationSummaryBtn = document.getElementById('showAmortizationSummaryBtn');
 
         const showView = (viewToShow) => {
           [summaryView, breakdownView, amortizationView].forEach(view => {
             if (view) view.classList.toggle('is-hidden', view.id !== viewToShow);
           });
           if (showSummaryBtn) showSummaryBtn.classList.toggle('is-hidden', viewToShow === 'summaryView');
+          if (showAmortizationSummaryBtn) showAmortizationSummaryBtn.classList.toggle('is-hidden', viewToShow === 'summaryView');
         };
 
         if (showBreakdownBtn) showBreakdownBtn.addEventListener('click', () => showView('breakdownView'));
         if (showSummaryBtn) showSummaryBtn.addEventListener('click', () => showView('summaryView'));
+        if (showAmortizationSummaryBtn) showAmortizationSummaryBtn.addEventListener('click', () => showView('summaryView'));
 
         // Show summary view by default
         showView('summaryView');
