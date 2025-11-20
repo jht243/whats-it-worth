@@ -3847,8 +3847,13 @@ if (outputs.term_hint) outputs.term_hint.textContent = `Original term ${normaliz
         };
 
         const hydrateInputsFromState = () => {
+          console.log('[Debug] Starting hydrateInputsFromState...');
           const state = loadUserInputsState();
-          if (!state) return false;
+          if (!state) {
+            console.log('[Debug] loadUserInputsState returned null. No saved state found.');
+            return false;
+          }
+          console.log('[Debug] Found saved state:', state);
 
           const entries = Object.entries(state.inputs || {});
           const hasMeaningfulInput = entries.some(([, val]) => {
@@ -3856,7 +3861,11 @@ if (outputs.term_hint) outputs.term_hint.textContent = `Original term ${normaliz
             return s !== '';
           });
           // If everything saved was blank, treat as no prior state so defaults can apply
-          if (!hasMeaningfulInput) return false;
+          if (!hasMeaningfulInput) {
+            console.log('[Debug] State has no meaningful input. Ignoring and applying defaults.');
+            return false;
+          }
+          console.log('[Debug] State has meaningful input. Proceeding to hydrate inputs.');
 
           // Fill inputs
           entries.forEach(([id, val]) => {
@@ -4689,8 +4698,12 @@ if (outputs.term_hint) outputs.term_hint.textContent = `Original term ${normaliz
 
         // Hydrate from saved widget/local state BEFORE applying derived defaults
         const hadSavedState = !!hydrateInputsFromState();
+        console.log(`[Debug] Result of hydrateInputsFromState: ${hadSavedState}`);
         if (!hadSavedState) {
+          console.log('[Debug] No saved state was hydrated. Applying rental defaults.');
           setRentalDefaultsIfEmpty(true);
+        } else {
+          console.log('[Debug] Saved state was hydrated. Skipping rental defaults.');
         }
 
         // Ensure visibility and computed labels reflect hydrated/defaulted state
