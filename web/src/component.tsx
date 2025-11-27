@@ -308,22 +308,29 @@ export default function Calculator({ initialData }: { initialData?: any }) {
   const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [subscribeMessage, setSubscribeMessage] = useState("");
 
+  // Debug logging for render
+  console.log("[BMI Calculator] Render. Type:", calculatorType, "ShowModal:", showSubscribeModal);
+
   // Feedback State
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
   useEffect(() => {
+    console.log("[BMI Calculator] Turnstile Effect triggered. Show:", showSubscribeModal);
     if (showSubscribeModal && (window as any).turnstile) {
+      console.log("[BMI Calculator] Rendering Turnstile...");
       setTimeout(() => {
           try {
             (window as any).turnstile.render('#turnstile-widget', {
               sitekey: (window as any).TURNSTILE_SITE_KEY,
               callback: function(token: string) {
+                console.log("[BMI Calculator] Turnstile success");
                 setTurnstileToken(token);
               },
             });
           } catch (e) {
+            console.error("[BMI Calculator] Turnstile render error:", e);
             // Turnstile might already be rendered
           }
       }, 100);

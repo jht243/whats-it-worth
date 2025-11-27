@@ -5,7 +5,7 @@ import BmiHealthHelloWorld from "./component";
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean }
+  { hasError: boolean; error?: any }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
@@ -13,7 +13,7 @@ class ErrorBoundary extends React.Component<
   }
 
   static getDerivedStateFromError(error: any) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: any, errorInfo: any) {
@@ -40,9 +40,18 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626" }}>
+        <div style={{ padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626", wordBreak: "break-word" }}>
           <h3>Something went wrong.</h3>
           <p>Please try refreshing the page.</p>
+          {/* Debug Info */}
+          <details style={{ marginTop: 10, textAlign: "left", fontSize: "12px", color: "#666" }}>
+            <summary>Debug Error Details</summary>
+            <pre style={{ whiteSpace: "pre-wrap", background: "#f5f5f5", padding: 10, borderRadius: 4 }}>
+              {(this.state as any).error?.toString()}
+              <br />
+              {(this.state as any).error?.stack}
+            </pre>
+          </details>
         </div>
       );
     }

@@ -24863,20 +24863,25 @@ function Calculator({ initialData: initialData2 }) {
   const [turnstileToken, setTurnstileToken] = (0, import_react3.useState)(null);
   const [subscribeStatus, setSubscribeStatus] = (0, import_react3.useState)("idle");
   const [subscribeMessage, setSubscribeMessage] = (0, import_react3.useState)("");
+  console.log("[BMI Calculator] Render. Type:", calculatorType, "ShowModal:", showSubscribeModal);
   const [showFeedbackModal, setShowFeedbackModal] = (0, import_react3.useState)(false);
   const [feedbackText, setFeedbackText] = (0, import_react3.useState)("");
   const [feedbackStatus, setFeedbackStatus] = (0, import_react3.useState)("idle");
   (0, import_react3.useEffect)(() => {
+    console.log("[BMI Calculator] Turnstile Effect triggered. Show:", showSubscribeModal);
     if (showSubscribeModal && window.turnstile) {
+      console.log("[BMI Calculator] Rendering Turnstile...");
       setTimeout(() => {
         try {
           window.turnstile.render("#turnstile-widget", {
             sitekey: window.TURNSTILE_SITE_KEY,
             callback: function(token) {
+              console.log("[BMI Calculator] Turnstile success");
               setTurnstileToken(token);
             }
           });
         } catch (e) {
+          console.error("[BMI Calculator] Turnstile render error:", e);
         }
       }, 100);
     }
@@ -26626,7 +26631,7 @@ var ErrorBoundary = class extends import_react4.default.Component {
     this.state = { hasError: false };
   }
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
     console.error("Widget Error Boundary caught error:", error, errorInfo);
@@ -26648,9 +26653,17 @@ var ErrorBoundary = class extends import_react4.default.Component {
   }
   render() {
     if (this.state.hasError) {
-      return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626" }, children: [
+      return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626", wordBreak: "break-word" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { children: "Something went wrong." }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." })
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("details", { style: { marginTop: 10, textAlign: "left", fontSize: "12px", color: "#666" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("summary", { children: "Debug Error Details" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("pre", { style: { whiteSpace: "pre-wrap", background: "#f5f5f5", padding: 10, borderRadius: 4 }, children: [
+            this.state.error?.toString(),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("br", {}),
+            this.state.error?.stack
+          ] })
+        ] })
       ] });
     }
     return this.props.children;
