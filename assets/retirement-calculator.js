@@ -48761,7 +48761,7 @@ function RetirementCalculatorHelloWorld({ initialData: initialData2 }) {
   const [isAnalyzing, setIsAnalyzing] = (0, import_react52.useState)(false);
   const [calculators, setCalculators] = (0, import_react52.useState)(() => {
     const loaded = loadSavedData();
-    if (initialData2 && (initialData2.current_age || initialData2.annual_pre_tax_income)) {
+    if (initialData2 && Object.keys(initialData2).length > 0) {
       try {
         const current3 = loaded["Retirement Calculator"];
         loaded["Retirement Calculator"] = {

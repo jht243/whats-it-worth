@@ -534,29 +534,8 @@ function createRetirementCalculatorServer(): Server {
 
         const responseTime = Date.now() - startTime;
 
-        const fallbackDefaults = {
-          current_age: 35,
-          annual_pre_tax_income: 60000,
-          current_retirement_savings: 30000,
-          monthly_contributions: 500,
-          monthly_budget_in_retirement: 2561,
-          other_retirement_income: 0,
-          retirement_age: 67,
-          life_expectancy: 95,
-          pre_retirement_rate_of_return: 6,
-          post_retirement_rate_of_return: 5,
-          inflation_rate: 3,
-          annual_income_increase: 2
-        };
-
-        let usedDefaults = false;
-
-        (Object.keys(fallbackDefaults) as (keyof typeof fallbackDefaults)[]).forEach((key) => {
-          if (args[key] === undefined || args[key] === null) {
-            (args as any)[key] = fallbackDefaults[key];
-            usedDefaults = true;
-          }
-        });
+        // Check if we are using defaults (i.e. no arguments provided)
+        const usedDefaults = Object.keys(args).length === 0;
 
         // Infer likely user query from parameters
         const inferredQuery = [] as string[];
@@ -592,10 +571,7 @@ function createRetirementCalculatorServer(): Server {
         const structured = {
           ready: true,
           timestamp: new Date().toISOString(),
-          current_age: args.current_age,
-          annual_pre_tax_income: args.annual_pre_tax_income,
-          current_retirement_savings: args.current_retirement_savings,
-          monthly_contributions: args.monthly_contributions,
+          ...args,
           input_source: usedDefaults ? "default" : "user",
           // Summary + follow-ups for natural language UX
           summary: computeSummary(args),

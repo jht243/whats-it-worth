@@ -214,7 +214,7 @@ export default function RetirementCalculatorHelloWorld({ initialData }: { initia
   
   const [calculators, setCalculators] = useState<Record<CalculatorType, CalculatorData>>(() => {
     const loaded = loadSavedData();
-    if (initialData && (initialData.current_age || initialData.annual_pre_tax_income)) {
+    if (initialData && Object.keys(initialData).length > 0) {
        try {
          const current = loaded["Retirement Calculator"];
          loaded["Retirement Calculator"] = {
