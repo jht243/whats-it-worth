@@ -50609,7 +50609,7 @@ function PortfolioSimulator({ initialData: initialData2 }) {
     { name: "Other", value: suggestedAllocation.other, color: ALLOCATION_COLORS[8] }
   ].filter((d) => d.value > 0);
   const styles = {
-    container: { width: "100%", maxWidth: "600px", margin: "0 auto", backgroundColor: COLORS.bg, fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box", minHeight: "101vh" },
+    container: { width: "100%", maxWidth: "600px", margin: "0 auto", backgroundColor: COLORS.bg, fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box" },
     card: { backgroundColor: COLORS.card, borderRadius: "24px", padding: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)", marginBottom: "20px", width: "100%", boxSizing: "border-box" },
     row: { display: "flex", alignItems: "flex-start", marginBottom: "20px", gap: "16px" },
     column: { flex: 1, display: "flex", flexDirection: "column" },
@@ -51360,7 +51360,7 @@ var COLORS2 = {
   blue: "#5D9CEC"
 };
 function App({ initialData: initialData2 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { style: { backgroundColor: COLORS2.bg, minHeight: "100vh" }, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(PortfolioSimulator, { initialData: initialData2 }) });
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { style: { backgroundColor: COLORS2.bg }, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(PortfolioSimulator, { initialData: initialData2 }) });
 }
 var container = document.getElementById("retirement-calculator-root");
 if (!container) {

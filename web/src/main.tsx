@@ -123,7 +123,7 @@ const COLORS = {
 
 function App({ initialData }: { initialData: any }) {
   return (
-    <div style={{ backgroundColor: COLORS.bg, minHeight: "100vh" }}>
+    <div style={{ backgroundColor: COLORS.bg }}>
       <PortfolioSimulator initialData={initialData} />
     </div>
   );

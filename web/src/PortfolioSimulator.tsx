@@ -392,7 +392,7 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
   ].filter((d) => d.value > 0);
 
   const styles = {
-    container: { width: "100%", maxWidth: "600px", margin: "0 auto", backgroundColor: COLORS.bg, fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box" as const, minHeight: "101vh" },
+    container: { width: "100%", maxWidth: "600px", margin: "0 auto", backgroundColor: COLORS.bg, fontFamily: "'Inter', sans-serif", padding: "20px", boxSizing: "border-box" as const },
     card: { backgroundColor: COLORS.card, borderRadius: "24px", padding: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)", marginBottom: "20px", width: "100%", boxSizing: "border-box" as const },
     row: { display: "flex", alignItems: "flex-start", marginBottom: "20px", gap: "16px" },
     column: { flex: 1, display: "flex", flexDirection: "column" as const },
