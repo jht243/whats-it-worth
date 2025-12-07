@@ -711,7 +711,7 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
                     }}
                   >
                       <TrendingUp size={16} />
-                      Retirement Calculator
+                      Portfolio Optimizer
                   </button>
                   </a>
                   <a href="/" style={{ textDecoration: "none", flex: 1 }}>

@@ -1,13 +1,13 @@
 {
-  "name": "retirement-calculator-mcp-node",
+  "name": "portfolio-optimizer-mcp-node",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "Retirement Calculator — calculate retirement metrics. Analysis of retirement data.",
+  "description": "Portfolio Optimizer — optimize portfolio allocation. Investment and portfolio analysis.",
   "keywords": [
-    "retirement calculator",
+    "portfolio optimizer",
     "financial calculator",
-    "retirement",
+    "portfolio",
     "finance"
   ],
   "scripts": {

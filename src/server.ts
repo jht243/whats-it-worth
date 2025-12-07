@@ -30,7 +30,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-type RetirementCalculatorWidget = {
+type PortfolioOptimizerWidget = {
   id: string;
   title: string;
   templateUri: string;
@@ -200,40 +200,40 @@ function readWidgetHtml(componentName: string): string {
 // Added timestamp suffix to force cache invalidation for width fix
 const VERSION = (process.env.RENDER_GIT_COMMIT?.slice(0, 7) || Date.now().toString()) + '-' + Date.now();
 
-function widgetMeta(widget: RetirementCalculatorWidget, bustCache: boolean = false) {
+function widgetMeta(widget: PortfolioOptimizerWidget, bustCache: boolean = false) {
   const templateUri = bustCache
-    ? `ui://widget/retirement-calculator.html?v=${VERSION}`
+    ? `ui://widget/portfolio-optimizer.html?v=${VERSION}`
     : widget.templateUri;
 
   return {
     "openai/outputTemplate": templateUri,
     "openai/widgetDescription":
-      "A comprehensive retirement calculator for Retirement planning. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
+      "A comprehensive portfolio optimizer for portfolio optimization. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
     "openai/componentDescriptions": {
       "metrics-form": "Input form for income, savings, and age.",
-      "retirement-card": "Card displaying the calculated Retirement and retirement category.",
+      "portfolio-card": "Card displaying the calculated Retirement and retirement category.",
       "projected-savings-card": "Card showing the estimated projected savings.",
     },
     "openai/widgetKeywords": [
-      "retirement",
+      "portfolio",
       "planning",
       "income",
       "savings",
-      "retirement calculator",
+      "portfolio optimizer",
       "finance",
       "investment"
     ],
     "openai/sampleConversations": [
-      { "user": "Calculate my Retirement", "assistant": "Here is the Retirement Calculator. You can enter your income, savings, and age when ready, or I can help calculate if you provide them." },
-      { "user": "Calculate my Retirement, I am 35 years old, make $100,000, and have $50,000 in savings.", "assistant": "I can help with that. Here is your Retirement calculation." },
+      { "user": "Optimize my portfolio", "assistant": "Here is the Portfolio Optimizer. You can enter your income, savings, and age when ready, or I can help calculate if you provide them." },
+      { "user": "Optimize my portfolio, I am 35 years old, make $100,000, and have $50,000 in savings.", "assistant": "I can help with that. Here is your portfolio optimization." },
       { "user": "What is my projected savings if I'm 40 years old, make $80,000, and have $30,000 in savings?", "assistant": "I've estimated your projected savings based on your income, savings, and age." },
     ],
     "openai/starterPrompts": [
-      "Calculate My Retirement",
-      "Retirement Planning",
+      "Optimize my portfolio",
+      "Portfolio Planning",
       "Income Calculator",
       "Savings Calculator",
-      "Retirement Calculator",
+      "Portfolio Optimizer",
       "Finance Calculator",
       "Investment Calculator",
     ],
@@ -259,21 +259,21 @@ function widgetMeta(widget: RetirementCalculatorWidget, bustCache: boolean = fal
   } as const;
 }
 
-const widgets: RetirementCalculatorWidget[] = [
+const widgets: PortfolioOptimizerWidget[] = [
   {
-    id: "retirement-calculator",
-    title: "Retirement Calculator — analyze retirement and finance",
-    templateUri: `ui://widget/retirement-calculator.html?v=${VERSION}`,
+    id: "portfolio-optimizer",
+    title: "Portfolio Optimizer — analyze portfolio allocation",
+    templateUri: `ui://widget/portfolio-optimizer.html?v=${VERSION}`,
     invoking:
-      "Opening the Retirement Calculator...",
+      "Opening the Portfolio Optimizer...",
     invoked:
-      "Here is the Retirement Calculator. Enter your income, savings, and age to calculate your retirement metrics.",
-    html: readWidgetHtml("retirement-calculator"),
+      "Here is the Portfolio Optimizer. Enter your income, savings, and age to optimize your portfolio allocation.",
+    html: readWidgetHtml("portfolio-optimizer"),
   },
 ];
 
-const widgetsById = new Map<string, RetirementCalculatorWidget>();
-const widgetsByUri = new Map<string, RetirementCalculatorWidget>();
+const widgetsById = new Map<string, PortfolioOptimizerWidget>();
+const widgetsByUri = new Map<string, PortfolioOptimizerWidget>();
 
 widgets.forEach((widget) => {
   widgetsById.set(widget.id, widget);
@@ -319,7 +319,7 @@ const toolInputParser = z.object({
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this for Retirement planning. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
+    "Use this for portfolio optimization. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
@@ -363,7 +363,7 @@ const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
   name: widget.title,
   description:
-    "HTML template for the Retirement, Planning, Income, and Asset Allocation Retirement Calculator widget.",
+    "HTML template for the Portfolio allocation and investment Portfolio Optimizer widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
@@ -372,18 +372,18 @@ const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
   uriTemplate: widget.templateUri,
   name: widget.title,
   description:
-    "Template descriptor for the Retirement, Planning, Income, and Asset Allocation Retirement Calculator widget.",
+    "Template descriptor for the Portfolio allocation and investment Portfolio Optimizer widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
 
-function createRetirementCalculatorServer(): Server {
+function createPortfolioOptimizerServer(): Server {
   const server = new Server(
     {
-      name: "retirement-calculator",
+      name: "portfolio-optimizer",
       version: "0.1.0",
       description:
-        "Retirement Calculator is a comprehensive app for analyzing retirement metrics.",
+        "Portfolio Optimizer is a comprehensive app for analyzing portfolio allocation.",
     },
     {
       capabilities: {
@@ -414,7 +414,7 @@ function createRetirementCalculatorServer(): Server {
       }
 
       // Inject current FRED rate into HTML before sending to ChatGPT
-      // (Logic removed for Retirement calculator)
+      // (Logic removed for portfolio optimizer)
       let htmlToSend = widget.html;
       
       if (TURNSTILE_SITE_KEY) {
@@ -547,7 +547,7 @@ function createRetirementCalculatorServer(): Server {
         logAnalytics("tool_call_success", {
           toolName: request.params.name,
           params: args,
-          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Retirement Calculator",
+          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Portfolio Optimizer",
           responseTime,
 
           device: deviceCategory,
@@ -568,7 +568,7 @@ function createRetirementCalculatorServer(): Server {
         console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
 
         // Build structured content once so we can log it and return it.
-        // For the retirement calculator, expose fields relevant to Retirement/Asset Allocation
+        // For the portfolio optimizer, expose fields relevant to portfolio allocation
         const structured = {
           ready: true,
           timestamp: new Date().toISOString(),
@@ -898,7 +898,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Retirement Calculator Analytics</title>
+  <title>Portfolio Optimizer Analytics</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; padding: 20px; }
@@ -925,7 +925,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 </head>
 <body>
   <div class="container">
-    <h1>📊 Retirement Calculator Analytics</h1>
+    <h1>📊 Portfolio Optimizer Analytics</h1>
     <p class="subtitle">Last 7 days • Auto-refresh every 60s</p>
     
     <div class="grid">
@@ -983,7 +983,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 
     <div class="grid" style="margin-bottom: 20px;">
       <div class="card">
-        <h2>Retirement Status Categories</h2>
+        <h2>Portfolio Status Categories</h2>
         <table>
           <thead><tr><th>Category</th><th>Count</th></tr></thead>
           <tbody>
@@ -1086,7 +1086,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
       </div>
       
       <div class="card">
-        <h2>Target Retirement Age</h2>
+        <h2>Target Investment Horizon</h2>
         <table>
           <thead><tr><th>Age Range</th><th>Users</th></tr></thead>
           <tbody>
@@ -1284,7 +1284,7 @@ async function subscribeToButtondown(email: string, topicId: string, topicName: 
 
   const metadata: Record<string, any> = {
     topicName,
-    source: "retirement-calculator",
+    source: "portfolio-optimizer",
     subscribedAt: new Date().toISOString(),
   };
 
@@ -1374,7 +1374,7 @@ async function updateButtondownSubscriber(email: string, topicId: string, topicN
   const updatedMetadata = {
     ...existingMetadata,
     [topicKey]: topicData,
-    source: "retirement-calculator",
+    source: "portfolio-optimizer",
   };
 
   const updateRequestBody = {
@@ -1430,7 +1430,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
     const parsed = JSON.parse(body);
     const email = parsed.email;
     const topicId = parsed.topicId || parsed.settlementId || "retirement-news";
-    const topicName = parsed.topicName || parsed.settlementName || "Retirement Calculator Updates";
+    const topicName = parsed.topicName || parsed.settlementName || "Portfolio Optimizer Updates";
     const turnstileToken = parsed.turnstileToken;
 
     if (!email || !email.includes("@")) {
@@ -1518,7 +1518,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
 async function handleSseRequest(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const server = createRetirementCalculatorServer();
+  const server = createPortfolioOptimizerServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 
@@ -1631,8 +1631,8 @@ const httpServer = createServer(
     }
 
     // Serve alias for legacy loader path -> our main widget HTML
-    if (req.method === "GET" && url.pathname === "/assets/retirement-calculator.html") {
-      const mainAssetPath = path.join(ASSETS_DIR, "retirement-calculator.html");
+    if (req.method === "GET" && url.pathname === "/assets/portfolio-optimizer.html") {
+      const mainAssetPath = path.join(ASSETS_DIR, "portfolio-optimizer.html");
       if (fs.existsSync(mainAssetPath) && fs.statSync(mainAssetPath).isFile()) {
         res.writeHead(200, {
           "Content-Type": "text/html",
@@ -1668,7 +1668,7 @@ const httpServer = createServer(
         });
 
         // If serving the main widget HTML, inject the current rate into the badge
-        if (ext === ".html" && path.basename(assetPath) === "retirement-calculator.html") {
+        if (ext === ".html" && path.basename(assetPath) === "portfolio-optimizer.html") {
           try {
             let html = fs.readFileSync(assetPath, "utf8");
             
@@ -1700,7 +1700,7 @@ httpServer.on("clientError", (err: Error, socket) => {
 });
 
 httpServer.listen(port, () => {
-  console.log(`Retirement Calculator MCP server listening on http://localhost:${port}`);
+  console.log(`Portfolio Optimizer MCP server listening on http://localhost:${port}`);
   console.log(`  SSE stream: GET http://localhost:${port}${ssePath}`);
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`

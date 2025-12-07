@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 
-const LOCAL_CALCULATOR_PATH = path.resolve(process.cwd(), 'assets/retirement-calculator.html');
+const LOCAL_CALCULATOR_PATH = path.resolve(process.cwd(), 'assets/portfolio-optimizer.html');
 const EXTERNAL_CALCULATOR_URL = 'https://www.calculator.net/bmi-calculator.html';
 
 const TEST_CASES = [
@@ -10,7 +10,7 @@ const TEST_CASES = [
     { height: 190, weight: 100, age: 45, gender: 'male' },
 ];
 
-test.describe('Retirement Calculator Comparison', () => {
+test.describe('Portfolio Optimizer Comparison', () => {
     for (const params of TEST_CASES) {
         test(`Compare BMI for ${params.height}cm, ${params.weight}kg, ${params.age}yo, ${params.gender}`, async ({ page }) => {
             // 1. Get External Result

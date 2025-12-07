@@ -1,9 +1,9 @@
 {
-  "name": "retirement-calculator-web",
+  "name": "portfolio-optimizer-web",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.tsx --bundle --format=esm --outfile=../assets/retirement-calculator.js"
+    "build": "esbuild src/main.tsx --bundle --format=esm --outfile=../assets/portfolio-optimizer.js"
   },
   "dependencies": {
     "lucide-react": "^0.554.0",

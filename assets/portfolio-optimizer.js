@@ -51123,7 +51123,7 @@ function PortfolioSimulator({ initialData: initialData2 }) {
               },
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TrendingUp, { size: 16 }),
-                "Retirement Calculator"
+                "Portfolio Optimizer"
               ]
             }
           ) }),
@@ -51348,7 +51348,7 @@ var getHydrationData = () => {
   console.log("[Hydration] No data found in any candidate source");
   return {};
 };
-console.log("[Main] Retirement Calculator main.tsx loading...");
+console.log("[Main] Portfolio Optimizer main.tsx loading...");
 var COLORS2 = {
   primary: "#56C596",
   primaryDark: "#3aa87b",
@@ -51362,9 +51362,9 @@ var COLORS2 = {
 function App({ initialData: initialData2 }) {
   return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { style: { backgroundColor: COLORS2.bg }, children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(PortfolioSimulator, { initialData: initialData2 }) });
 }
-var container = document.getElementById("retirement-calculator-root");
+var container = document.getElementById("portfolio-optimizer-root");
 if (!container) {
-  throw new Error("retirement-calculator-root element not found");
+  throw new Error("portfolio-optimizer-root element not found");
 }
 var root = (0, import_client.createRoot)(container);
 var renderApp = (data) => {

@@ -11,8 +11,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const htmlPath = path.join(__dirname, '../assets/retirement-calculator.html');
-const jsPath = path.join(__dirname, '../assets/retirement-calculator.js');
+const htmlPath = path.join(__dirname, '../assets/portfolio-optimizer.html');
+const jsPath = path.join(__dirname, '../assets/portfolio-optimizer.js');
 
 console.log('[Inline Bundle] Reading files...');
 const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
@@ -34,8 +34,8 @@ const inlineScript = `
       const url = URL.createObjectURL(blob);
       import(url)
         .catch(err => {
-          console.error('[Retirement Calculator] Failed to load:', err);
-          const root = document.getElementById('retirement-calculator-root');
+          console.error('[Portfolio Optimizer] Failed to load:', err);
+          const root = document.getElementById('portfolio-optimizer-root');
           if (root) {
             root.innerHTML = '<div style="padding:20px;text-align:center;font-family:sans-serif;color:#DC2626"><h3>Failed to load calculator</h3><p>Please refresh the page.</p></div>';
           }

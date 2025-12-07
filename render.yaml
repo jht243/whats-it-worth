@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: bmi-health-calculator
+    name: portfolio-optimizer
     env: node
     plan: free
     region: oregon

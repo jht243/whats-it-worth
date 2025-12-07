@@ -174,7 +174,7 @@ const DEFAULT_VALUES: CalculatorValues = {
   budgetMode: "$"
 };
 
-const CALCULATOR_TYPES = ["Retirement Calculator"] as const;
+const CALCULATOR_TYPES = ["Portfolio Optimizer"] as const;
 type CalculatorType = typeof CALCULATOR_TYPES[number];
 
 const STORAGE_KEY = "RETIREMENT_CALCULATOR_DATA";
@@ -190,14 +190,14 @@ const loadSavedData = (): Record<CalculatorType, CalculatorData> => {
       
       if (daysDiff < EXPIRATION_DAYS) {
         const merged: Record<CalculatorType, CalculatorData> = {
-            "Retirement Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null }
+            "Portfolio Optimizer": { values: { ...DEFAULT_VALUES }, touched: {}, result: null }
         };
 
-        if (data["Retirement Calculator"]) {
-            merged["Retirement Calculator"] = {
-                ...merged["Retirement Calculator"],
-                ...data["Retirement Calculator"],
-                values: { ...merged["Retirement Calculator"].values, ...data["Retirement Calculator"].values }
+        if (data["Portfolio Optimizer"]) {
+            merged["Portfolio Optimizer"] = {
+                ...merged["Portfolio Optimizer"],
+                ...data["Portfolio Optimizer"],
+                values: { ...merged["Portfolio Optimizer"].values, ...data["Portfolio Optimizer"].values }
             };
         }
         return merged;
@@ -208,20 +208,20 @@ const loadSavedData = (): Record<CalculatorType, CalculatorData> => {
   }
   
   return {
-    "Retirement Calculator": { values: { ...DEFAULT_VALUES }, touched: {}, result: null }
+    "Portfolio Optimizer": { values: { ...DEFAULT_VALUES }, touched: {}, result: null }
   };
 };
 
-export default function RetirementCalculatorHelloWorld({ initialData }: { initialData?: any }) {
-  const [calculatorType, setCalculatorType] = useState<CalculatorType>("Retirement Calculator");
+export default function PortfolioOptimizerHelloWorld({ initialData }: { initialData?: any }) {
+  const [calculatorType, setCalculatorType] = useState<CalculatorType>("Portfolio Optimizer");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const [calculators, setCalculators] = useState<Record<CalculatorType, CalculatorData>>(() => {
     const loaded = loadSavedData();
     if (initialData && Object.keys(initialData).length > 0) {
        try {
-         const current = loaded["Retirement Calculator"];
-         loaded["Retirement Calculator"] = {
+         const current = loaded["Portfolio Optimizer"];
+         loaded["Portfolio Optimizer"] = {
            ...current,
            values: {
              ...current.values,
@@ -277,7 +277,7 @@ export default function RetirementCalculatorHelloWorld({ initialData }: { initia
             body: JSON.stringify({
                 email,
                 topicId: "retirement-news",
-                topicName: "Retirement Calculator Updates"
+                topicName: "Portfolio Optimizer Updates"
             })
         });
         
@@ -1735,7 +1735,7 @@ export default function RetirementCalculatorHelloWorld({ initialData }: { initia
                     }}
                   >
                       <TrendingUp size={16} />
-                      Retirement Calculator
+                      Portfolio Optimizer
                   </button>
                   <button 
                     className="btn-press"
