@@ -284,17 +284,16 @@ const toolInputSchema = {
   type: "object",
   properties: {
     current_age: { type: "number", description: "Current age of the user." },
-    annual_pre_tax_income: { type: "number", description: "Annual pre-tax income." },
-    current_retirement_savings: { type: "number", description: "Total current retirement savings." },
-    monthly_contributions: { type: "number", description: "Monthly contribution amount." },
-    monthly_budget_in_retirement: { type: "number", description: "Estimated monthly budget needed in retirement." },
-    other_retirement_income: { type: "number", description: "Other monthly retirement income." },
     retirement_age: { type: "number", description: "Target retirement age." },
-    life_expectancy: { type: "number", description: "Estimated life expectancy." },
-    pre_retirement_rate_of_return: { type: "number", description: "Expected annual rate of return before retirement." },
-    post_retirement_rate_of_return: { type: "number", description: "Expected annual rate of return after retirement." },
-    inflation_rate: { type: "number", description: "Expected annual inflation rate." },
-    annual_income_increase: { type: "number", description: "Expected annual income increase." }
+    time_horizon: { type: "number", description: "Investment time horizon in years." },
+    initial_investment: { type: "number", description: "Total initial investment amount." },
+    annual_contribution: { type: "number", description: "Annual contribution amount." },
+    monthly_contribution: { type: "number", description: "Monthly contribution amount." },
+    risk_tolerance: { type: "string", enum: ["conservative", "balanced", "aggressive"], description: "Risk tolerance level." },
+    investment_goal: { type: "string", enum: ["growth", "income", "preservation"], description: "Primary investment goal." },
+    // Legacy/Compatibility fields
+    current_retirement_savings: { type: "number", description: "Total current retirement savings." },
+    annual_pre_tax_income: { type: "number", description: "Annual pre-tax income." }
   },
   required: [],
   additionalProperties: false,
@@ -303,17 +302,15 @@ const toolInputSchema = {
 
 const toolInputParser = z.object({
   current_age: z.number().optional(),
-  annual_pre_tax_income: z.number().optional(),
-  current_retirement_savings: z.number().optional(),
-  monthly_contributions: z.number().optional(),
-  monthly_budget_in_retirement: z.number().optional(),
-  other_retirement_income: z.number().optional(),
   retirement_age: z.number().optional(),
-  life_expectancy: z.number().optional(),
-  pre_retirement_rate_of_return: z.number().optional(),
-  post_retirement_rate_of_return: z.number().optional(),
-  inflation_rate: z.number().optional(),
-  annual_income_increase: z.number().optional(),
+  time_horizon: z.number().optional(),
+  initial_investment: z.number().optional(),
+  annual_contribution: z.number().optional(),
+  monthly_contribution: z.number().optional(),
+  risk_tolerance: z.enum(["conservative", "balanced", "aggressive"]).optional(),
+  investment_goal: z.enum(["growth", "income", "preservation"]).optional(),
+  current_retirement_savings: z.number().optional(),
+  annual_pre_tax_income: z.number().optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({

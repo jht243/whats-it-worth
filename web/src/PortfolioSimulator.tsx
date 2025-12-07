@@ -274,19 +274,51 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
   // Load saved data from localStorage (persists for 72 hours)
   const savedData = loadSavedData();
   
+  // Helper to check if initialData has relevant fields
+  const hasInitial = (key: string) => initialData && initialData[key] !== undefined;
+
   const [allocation, setAllocation] = useState<AllocationInput>(() => {
     // If initialData provided from hydration, use it; otherwise use saved data
     if (initialData && Object.keys(initialData).length > 0) {
-      return savedData.allocation; // Still prefer saved, hydration can override specific fields
+      // TODO: If we want to support direct allocation input from LLM, parse it here
+      return savedData.allocation; 
     }
     return savedData.allocation;
   });
-  const [timeHorizon, setTimeHorizon] = useState(() => savedData.timeHorizon);
+
+  const [timeHorizon, setTimeHorizon] = useState(() => {
+    if (hasInitial("time_horizon")) return String(initialData.time_horizon);
+    if (hasInitial("retirement_age") && hasInitial("current_age")) {
+        return String(Math.max(1, initialData.retirement_age - initialData.current_age));
+    }
+    return savedData.timeHorizon;
+  });
+
   const [inputMode, setInputMode] = useState<"percent" | "dollar">(() => savedData.inputMode);
-  const [annualContribution, setAnnualContribution] = useState(() => savedData.annualContribution);
-  const [initialInvestment, setInitialInvestment] = useState(() => savedData.initialInvestment);
-  const [investmentGoal, setInvestmentGoal] = useState(() => savedData.investmentGoal);
-  const [activePreset, setActivePreset] = useState<string | null>(() => savedData.activePreset);
+
+  const [annualContribution, setAnnualContribution] = useState(() => {
+    if (hasInitial("annual_contribution")) return String(initialData.annual_contribution);
+    if (hasInitial("monthly_contribution")) return String(initialData.monthly_contribution * 12);
+    // Legacy mapping
+    if (hasInitial("monthly_contributions")) return String(initialData.monthly_contributions * 12);
+    return savedData.annualContribution;
+  });
+
+  const [initialInvestment, setInitialInvestment] = useState(() => {
+    if (hasInitial("initial_investment")) return String(initialData.initial_investment);
+    if (hasInitial("current_retirement_savings")) return String(initialData.current_retirement_savings);
+    return savedData.initialInvestment;
+  });
+
+  const [investmentGoal, setInvestmentGoal] = useState(() => {
+    if (hasInitial("investment_goal")) return initialData.investment_goal;
+    return savedData.investmentGoal;
+  });
+
+  const [activePreset, setActivePreset] = useState<string | null>(() => {
+    if (hasInitial("risk_tolerance")) return initialData.risk_tolerance;
+    return savedData.activePreset;
+  });
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{ results: SimulationResult[]; stats: PortfolioStats } | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
