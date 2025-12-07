@@ -50267,6 +50267,50 @@ var ASSET_ASSUMPTIONS = {
   startups: { mean: 0.2, stdDev: 0.7, name: "Startup Investments" },
   other: { mean: 0.06, stdDev: 0.15, name: "Other" }
 };
+var STORAGE_KEY = "PORTFOLIO_OPTIMIZER_DATA";
+var EXPIRATION_HOURS = 72;
+var DEFAULT_DATA = {
+  allocation: { stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" },
+  timeHorizon: "10",
+  inputMode: "percent",
+  annualContribution: "6000",
+  initialInvestment: "10000",
+  investmentGoal: "growth",
+  activePreset: "balanced"
+};
+var loadSavedData = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { data, timestamp } = JSON.parse(saved);
+      const now = (/* @__PURE__ */ new Date()).getTime();
+      const hoursDiff = (now - timestamp) / (1e3 * 60 * 60);
+      if (hoursDiff < EXPIRATION_HOURS) {
+        return { ...DEFAULT_DATA, ...data };
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load saved portfolio data", e);
+  }
+  return DEFAULT_DATA;
+};
+var saveData = (data) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      data,
+      timestamp: (/* @__PURE__ */ new Date()).getTime()
+    }));
+  } catch (e) {
+    console.error("Failed to save portfolio data", e);
+  }
+};
+var clearSavedData = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    console.error("Failed to clear saved data", e);
+  }
+};
 var NumberControl = ({ value, onChange, min: min2 = 0, max: max2 = 1e7, step = 1, suffix: suffix2, prefix, disabled = false }) => {
   const handleDec = () => {
     if (disabled) return;
@@ -50435,17 +50479,34 @@ function runMonteCarloSimulation(allocation, timeHorizon, annualContribution, in
   return { results, stats };
 }
 function PortfolioSimulator({ initialData: initialData2 }) {
-  const [allocation, setAllocation] = (0, import_react57.useState)({ stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" });
-  const [timeHorizon, setTimeHorizon] = (0, import_react57.useState)("10");
-  const [inputMode, setInputMode] = (0, import_react57.useState)("percent");
-  const [annualContribution, setAnnualContribution] = (0, import_react57.useState)("6000");
-  const [initialInvestment, setInitialInvestment] = (0, import_react57.useState)("10000");
-  const [investmentGoal, setInvestmentGoal] = (0, import_react57.useState)("growth");
-  const [activePreset, setActivePreset] = (0, import_react57.useState)("balanced");
+  const savedData = loadSavedData();
+  const [allocation, setAllocation] = (0, import_react57.useState)(() => {
+    if (initialData2 && Object.keys(initialData2).length > 0) {
+      return savedData.allocation;
+    }
+    return savedData.allocation;
+  });
+  const [timeHorizon, setTimeHorizon] = (0, import_react57.useState)(() => savedData.timeHorizon);
+  const [inputMode, setInputMode] = (0, import_react57.useState)(() => savedData.inputMode);
+  const [annualContribution, setAnnualContribution] = (0, import_react57.useState)(() => savedData.annualContribution);
+  const [initialInvestment, setInitialInvestment] = (0, import_react57.useState)(() => savedData.initialInvestment);
+  const [investmentGoal, setInvestmentGoal] = (0, import_react57.useState)(() => savedData.investmentGoal);
+  const [activePreset, setActivePreset] = (0, import_react57.useState)(() => savedData.activePreset);
   const [isSimulating, setIsSimulating] = (0, import_react57.useState)(false);
   const [simulationResult, setSimulationResult] = (0, import_react57.useState)(null);
   const [showAdvanced, setShowAdvanced] = (0, import_react57.useState)(false);
   const [resultView, setResultView] = (0, import_react57.useState)("projection");
+  (0, import_react57.useEffect)(() => {
+    saveData({
+      allocation,
+      timeHorizon,
+      inputMode,
+      annualContribution,
+      initialInvestment,
+      investmentGoal,
+      activePreset
+    });
+  }, [allocation, timeHorizon, inputMode, annualContribution, initialInvestment, investmentGoal, activePreset]);
   const [showSubscribeModal, setShowSubscribeModal] = (0, import_react57.useState)(false);
   const [email, setEmail] = (0, import_react57.useState)("");
   const [subscribeStatus, setSubscribeStatus] = (0, import_react57.useState)("idle");
@@ -50570,13 +50631,14 @@ function PortfolioSimulator({ initialData: initialData2 }) {
     }
   };
   const resetToDefaults = () => {
-    setAllocation({ stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" });
-    setTimeHorizon("10");
-    setAnnualContribution("6000");
-    setInitialInvestment("10000");
-    setInvestmentGoal("growth");
-    setInputMode("percent");
-    setActivePreset("balanced");
+    clearSavedData();
+    setAllocation(DEFAULT_DATA.allocation);
+    setTimeHorizon(DEFAULT_DATA.timeHorizon);
+    setAnnualContribution(DEFAULT_DATA.annualContribution);
+    setInitialInvestment(DEFAULT_DATA.initialInvestment);
+    setInvestmentGoal(DEFAULT_DATA.investmentGoal);
+    setInputMode(DEFAULT_DATA.inputMode);
+    setActivePreset(DEFAULT_DATA.activePreset);
     setSimulationResult(null);
   };
   const pieData = [

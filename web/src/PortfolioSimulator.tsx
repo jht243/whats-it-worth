@@ -28,6 +28,65 @@ const ASSET_ASSUMPTIONS: Record<string, { mean: number; stdDev: number; name: st
   other: { mean: 0.06, stdDev: 0.15, name: "Other" }
 };
 
+// LocalStorage persistence
+const STORAGE_KEY = "PORTFOLIO_OPTIMIZER_DATA";
+const EXPIRATION_HOURS = 72; // 3 days
+
+interface SavedPortfolioData {
+  allocation: AllocationInput;
+  timeHorizon: string;
+  inputMode: "percent" | "dollar";
+  annualContribution: string;
+  initialInvestment: string;
+  investmentGoal: string;
+  activePreset: string | null;
+}
+
+const DEFAULT_DATA: SavedPortfolioData = {
+  allocation: { stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" },
+  timeHorizon: "10",
+  inputMode: "percent",
+  annualContribution: "6000",
+  initialInvestment: "10000",
+  investmentGoal: "growth",
+  activePreset: "balanced"
+};
+
+const loadSavedData = (): SavedPortfolioData => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const { data, timestamp } = JSON.parse(saved);
+      const now = new Date().getTime();
+      const hoursDiff = (now - timestamp) / (1000 * 60 * 60);
+      if (hoursDiff < EXPIRATION_HOURS) {
+        return { ...DEFAULT_DATA, ...data };
+      }
+    }
+  } catch (e) {
+    console.error("Failed to load saved portfolio data", e);
+  }
+  return DEFAULT_DATA;
+};
+
+const saveData = (data: SavedPortfolioData) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      data,
+      timestamp: new Date().getTime()
+    }));
+  } catch (e) {
+    console.error("Failed to save portfolio data", e);
+  }
+};
+
+const clearSavedData = () => {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    console.error("Failed to clear saved data", e);
+  }
+};
 
 interface AllocationInput { stocks: string; bonds: string; cash: string; realEstate: string; crypto: string; fourOhOneK: string; altInvestments: string; startups: string; other: string; }
 interface SimulationResult { year: number; median: number; p10: number; p25: number; p75: number; p90: number; expected: number; }
@@ -212,17 +271,39 @@ function runMonteCarloSimulation(allocation: AllocationInput, timeHorizon: numbe
 }
 
 export default function PortfolioSimulator({ initialData }: { initialData?: any }) {
-  const [allocation, setAllocation] = useState<AllocationInput>({ stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" });
-  const [timeHorizon, setTimeHorizon] = useState("10");
-  const [inputMode, setInputMode] = useState<"percent" | "dollar">("percent");
-  const [annualContribution, setAnnualContribution] = useState("6000");
-  const [initialInvestment, setInitialInvestment] = useState("10000");
-  const [investmentGoal, setInvestmentGoal] = useState("growth");
-  const [activePreset, setActivePreset] = useState<string | null>("balanced");
+  // Load saved data from localStorage (persists for 72 hours)
+  const savedData = loadSavedData();
+  
+  const [allocation, setAllocation] = useState<AllocationInput>(() => {
+    // If initialData provided from hydration, use it; otherwise use saved data
+    if (initialData && Object.keys(initialData).length > 0) {
+      return savedData.allocation; // Still prefer saved, hydration can override specific fields
+    }
+    return savedData.allocation;
+  });
+  const [timeHorizon, setTimeHorizon] = useState(() => savedData.timeHorizon);
+  const [inputMode, setInputMode] = useState<"percent" | "dollar">(() => savedData.inputMode);
+  const [annualContribution, setAnnualContribution] = useState(() => savedData.annualContribution);
+  const [initialInvestment, setInitialInvestment] = useState(() => savedData.initialInvestment);
+  const [investmentGoal, setInvestmentGoal] = useState(() => savedData.investmentGoal);
+  const [activePreset, setActivePreset] = useState<string | null>(() => savedData.activePreset);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationResult, setSimulationResult] = useState<{ results: SimulationResult[]; stats: PortfolioStats } | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [resultView, setResultView] = useState<"projection" | "allocation" | "summary">("projection");
+
+  // Save data to localStorage whenever relevant state changes
+  useEffect(() => {
+    saveData({
+      allocation,
+      timeHorizon,
+      inputMode,
+      annualContribution,
+      initialInvestment,
+      investmentGoal,
+      activePreset
+    });
+  }, [allocation, timeHorizon, inputMode, annualContribution, initialInvestment, investmentGoal, activePreset]);
 
   // Subscription State
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
@@ -358,7 +439,17 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
     else { setAllocation({ stocks: "25000", bonds: "45000", cash: "15000", realEstate: "5000", crypto: "0", fourOhOneK: "10000", altInvestments: "0", startups: "0", other: "0" }); }
   };
 
-  const resetToDefaults = () => { setAllocation({ stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" }); setTimeHorizon("10"); setAnnualContribution("6000"); setInitialInvestment("10000"); setInvestmentGoal("growth"); setInputMode("percent"); setActivePreset("balanced"); setSimulationResult(null); };
+  const resetToDefaults = () => { 
+    clearSavedData(); // Clear localStorage
+    setAllocation(DEFAULT_DATA.allocation); 
+    setTimeHorizon(DEFAULT_DATA.timeHorizon); 
+    setAnnualContribution(DEFAULT_DATA.annualContribution); 
+    setInitialInvestment(DEFAULT_DATA.initialInvestment); 
+    setInvestmentGoal(DEFAULT_DATA.investmentGoal); 
+    setInputMode(DEFAULT_DATA.inputMode); 
+    setActivePreset(DEFAULT_DATA.activePreset); 
+    setSimulationResult(null); 
+  };
 
   const pieData = [
     { name: "Stocks", value: parseFloat(allocation.stocks) || 0, color: ALLOCATION_COLORS[0] },
