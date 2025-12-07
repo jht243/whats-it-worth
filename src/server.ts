@@ -768,6 +768,19 @@ function evaluateAlerts(logs: AnalyticsEvent[]): AlertEntry[] {
     });
   }
 
+  // 4. Widget Load Failures (Crashes)
+  const widgetCrashes = logs.filter(
+    (l) => l.event === "widget_crash" && new Date(l.timestamp).getTime() >= dayAgo
+  ).length;
+
+  if (widgetCrashes > 0) {
+    alerts.push({
+      id: "widget-crash",
+      level: "critical",
+      message: `Widget crashes in last 24h: ${widgetCrashes} (Fix immediately)`,
+    });
+  }
+
   // 5. Buttondown Subscription Failures
   const recentSubs = logs.filter(
     (l) =>
@@ -1700,7 +1713,28 @@ httpServer.on("clientError", (err: Error, socket) => {
   socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
 });
 
+function startMonitoring() {
+  // Check alerts every hour
+  setInterval(() => {
+    try {
+      const logs = getRecentLogs(7);
+      const alerts = evaluateAlerts(logs);
+      
+      if (alerts.length > 0) {
+        console.log("\n=== 🚨 ACTIVE ALERTS 🚨 ===");
+        alerts.forEach(alert => {
+          console.log(`[ALERT] [${alert.level.toUpperCase()}] ${alert.message}`);
+        });
+        console.log("===========================\n");
+      }
+    } catch (e) {
+      console.error("Monitoring check failed:", e);
+    }
+  }, 60 * 60 * 1000); // 1 hour
+}
+
 httpServer.listen(port, () => {
+  startMonitoring();
   console.log(`Portfolio Optimizer MCP server listening on http://localhost:${port}`);
   console.log(`  SSE stream: GET http://localhost:${port}${ssePath}`);
   console.log(
