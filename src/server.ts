@@ -302,6 +302,16 @@ const toolInputSchema = {
     monthly_contribution: { type: "number", description: "Monthly contribution amount." },
     risk_tolerance: { type: "string", enum: ["conservative", "balanced", "aggressive"], description: "Risk tolerance level." },
     investment_goal: { type: "string", enum: ["growth", "income", "preservation"], description: "Primary investment goal." },
+    // Asset allocation fields (dollar amounts)
+    stocks: { type: "number", description: "Dollar amount in stocks." },
+    bonds: { type: "number", description: "Dollar amount in bonds." },
+    cash: { type: "number", description: "Dollar amount in cash." },
+    real_estate: { type: "number", description: "Dollar amount in real estate." },
+    crypto: { type: "number", description: "Dollar amount in cryptocurrency." },
+    four_oh_one_k: { type: "number", description: "Dollar amount in 401k." },
+    alt_investments: { type: "number", description: "Dollar amount in alternative investments." },
+    startups: { type: "number", description: "Dollar amount in startup investments." },
+    other: { type: "number", description: "Dollar amount in other investments." },
     // Legacy/Compatibility fields
     current_retirement_savings: { type: "number", description: "Total current retirement savings." },
     annual_pre_tax_income: { type: "number", description: "Annual pre-tax income." }
@@ -320,6 +330,16 @@ const toolInputParser = z.object({
   monthly_contribution: z.number().optional(),
   risk_tolerance: z.enum(["conservative", "balanced", "aggressive"]).optional(),
   investment_goal: z.enum(["growth", "income", "preservation"]).optional(),
+  // Asset allocation fields
+  stocks: z.number().optional(),
+  bonds: z.number().optional(),
+  cash: z.number().optional(),
+  real_estate: z.number().optional(),
+  crypto: z.number().optional(),
+  four_oh_one_k: z.number().optional(),
+  alt_investments: z.number().optional(),
+  startups: z.number().optional(),
+  other: z.number().optional(),
   current_retirement_savings: z.number().optional(),
   annual_pre_tax_income: z.number().optional(),
 });
@@ -566,6 +586,30 @@ function createPortfolioOptimizerServer(): Server {
              if (/growth|grow|maximize|aggressive/i.test(userText)) args.investment_goal = "growth";
              else if (/income|dividend|yield|passive/i.test(userText)) args.investment_goal = "income";
              else if (/preservation|protect|capital|safe/i.test(userText)) args.investment_goal = "preservation";
+          }
+          
+          // Asset allocation inference (e.g., "$100,000 in stocks", "$50k in bonds")
+          const assetPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
+            { key: "stocks", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:stocks?|equities?|equity|stock market)/i },
+            { key: "bonds", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:bonds?|fixed income|treasur(?:y|ies))/i },
+            { key: "cash", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:cash|savings?|money market|liquid)/i },
+            { key: "real_estate", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:real estate|reits?|property|properties)/i },
+            { key: "crypto", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:crypto(?:currency)?|bitcoin|btc|ethereum|eth)/i },
+            { key: "four_oh_one_k", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:401\s*k|401\(k\)|retirement account)/i },
+            { key: "alt_investments", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:alt(?:ernative)?\s*invest(?:ment)?s?|commodities|hedge funds?|private equity)/i },
+            { key: "startups", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:startups?|angel|venture|early[- ]stage)/i },
+          ];
+          
+          for (const { key, regex } of assetPatterns) {
+            if ((args as any)[key] === undefined) {
+              const match = userText.match(regex);
+              if (match) {
+                let amount = parseFloat(match[1].replace(/,/g, ''));
+                if (match[2]?.toLowerCase() === 'k') amount *= 1000;
+                if (match[2]?.toLowerCase() === 'm') amount *= 1000000;
+                if (amount > 0) (args as any)[key] = amount;
+              }
+            }
           }
 
         } catch (e) {
@@ -1647,8 +1691,9 @@ const httpServer = createServer(
     }
 
     // Serve alias for legacy loader path -> our main widget HTML
-    if (req.method === "GET" && url.pathname === "/assets/portfolio-optimizer.html") {
+    if (req.method === "GET" && (url.pathname === "/assets/portfolio-optimizer.html" || url.pathname === "/assets/retirement-calculator.html")) {
       const mainAssetPath = path.join(ASSETS_DIR, "portfolio-optimizer.html");
+      console.log(`[Debug Legacy] Request: ${url.pathname}, Main Path: ${mainAssetPath}, Exists: ${fs.existsSync(mainAssetPath)}`);
       if (fs.existsSync(mainAssetPath) && fs.statSync(mainAssetPath).isFile()) {
         res.writeHead(200, {
           "Content-Type": "text/html",

@@ -277,12 +277,28 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
   
   // Helper to check if initialData has relevant fields
   const hasInitial = (key: string) => initialData && initialData[key] !== undefined;
+  
+  // Check if initialData contains any allocation data (dollar amounts for asset classes)
+  const hasAllocationData = () => {
+    if (!initialData) return false;
+    const allocationKeys = ["stocks", "bonds", "cash", "real_estate", "crypto", "four_oh_one_k", "alt_investments", "startups", "other"];
+    return allocationKeys.some(key => initialData[key] !== undefined && initialData[key] > 0);
+  };
 
   const [allocation, setAllocation] = useState<AllocationInput>(() => {
-    // If initialData provided from hydration, use it; otherwise use saved data
-    if (initialData && Object.keys(initialData).length > 0) {
-      // TODO: If we want to support direct allocation input from LLM, parse it here
-      return savedData.allocation; 
+    // If initialData has allocation fields, use them (dollar mode)
+    if (hasAllocationData()) {
+      return {
+        stocks: String(initialData.stocks || 0),
+        bonds: String(initialData.bonds || 0),
+        cash: String(initialData.cash || 0),
+        realEstate: String(initialData.real_estate || 0),
+        crypto: String(initialData.crypto || 0),
+        fourOhOneK: String(initialData.four_oh_one_k || 0),
+        altInvestments: String(initialData.alt_investments || 0),
+        startups: String(initialData.startups || 0),
+        other: String(initialData.other || 0)
+      };
     }
     return savedData.allocation;
   });
@@ -295,7 +311,11 @@ export default function PortfolioSimulator({ initialData }: { initialData?: any 
     return savedData.timeHorizon;
   });
 
-  const [inputMode, setInputMode] = useState<"percent" | "dollar">(() => savedData.inputMode);
+  // Switch to dollar mode if allocation data was provided
+  const [inputMode, setInputMode] = useState<"percent" | "dollar">(() => {
+    if (hasAllocationData()) return "dollar";
+    return savedData.inputMode;
+  });
 
   const [annualContribution, setAnnualContribution] = useState(() => {
     if (hasInitial("annual_contribution")) return String(initialData.annual_contribution);

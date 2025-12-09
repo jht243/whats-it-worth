@@ -50268,6 +50268,7 @@ var ASSET_ASSUMPTIONS = {
   other: { mean: 0.06, stdDev: 0.15, name: "Other" }
 };
 var STORAGE_KEY = "PORTFOLIO_OPTIMIZER_DATA";
+var BANNER_STORAGE_KEY = "PORTFOLIO_BANNER_DISMISSED";
 var EXPIRATION_HOURS = 72;
 var DEFAULT_DATA = {
   allocation: { stocks: "60", bonds: "25", cash: "5", realEstate: "5", crypto: "0", fourOhOneK: "0", altInvestments: "0", startups: "0", other: "5" },
@@ -50481,9 +50482,24 @@ function runMonteCarloSimulation(allocation, timeHorizon, annualContribution, in
 function PortfolioSimulator({ initialData: initialData2 }) {
   const savedData = loadSavedData();
   const hasInitial = (key) => initialData2 && initialData2[key] !== void 0;
+  const hasAllocationData = () => {
+    if (!initialData2) return false;
+    const allocationKeys = ["stocks", "bonds", "cash", "real_estate", "crypto", "four_oh_one_k", "alt_investments", "startups", "other"];
+    return allocationKeys.some((key) => initialData2[key] !== void 0 && initialData2[key] > 0);
+  };
   const [allocation, setAllocation] = (0, import_react57.useState)(() => {
-    if (initialData2 && Object.keys(initialData2).length > 0) {
-      return savedData.allocation;
+    if (hasAllocationData()) {
+      return {
+        stocks: String(initialData2.stocks || 0),
+        bonds: String(initialData2.bonds || 0),
+        cash: String(initialData2.cash || 0),
+        realEstate: String(initialData2.real_estate || 0),
+        crypto: String(initialData2.crypto || 0),
+        fourOhOneK: String(initialData2.four_oh_one_k || 0),
+        altInvestments: String(initialData2.alt_investments || 0),
+        startups: String(initialData2.startups || 0),
+        other: String(initialData2.other || 0)
+      };
     }
     return savedData.allocation;
   });
@@ -50494,7 +50510,10 @@ function PortfolioSimulator({ initialData: initialData2 }) {
     }
     return savedData.timeHorizon;
   });
-  const [inputMode, setInputMode] = (0, import_react57.useState)(() => savedData.inputMode);
+  const [inputMode, setInputMode] = (0, import_react57.useState)(() => {
+    if (hasAllocationData()) return "dollar";
+    return savedData.inputMode;
+  });
   const [annualContribution, setAnnualContribution] = (0, import_react57.useState)(() => {
     if (hasInitial("annual_contribution")) return String(initialData2.annual_contribution);
     if (hasInitial("monthly_contribution")) return String(initialData2.monthly_contribution * 12);
@@ -50533,7 +50552,28 @@ function PortfolioSimulator({ initialData: initialData2 }) {
   const [email, setEmail] = (0, import_react57.useState)("");
   const [subscribeStatus, setSubscribeStatus] = (0, import_react57.useState)("idle");
   const [subscribeMessage, setSubscribeMessage] = (0, import_react57.useState)("");
-  const [showBanner, setShowBanner] = (0, import_react57.useState)(true);
+  const [showBanner, setShowBanner] = (0, import_react57.useState)(() => {
+    try {
+      const dismissed = localStorage.getItem(BANNER_STORAGE_KEY);
+      if (dismissed) {
+        const timestamp = parseInt(dismissed, 10);
+        const now = (/* @__PURE__ */ new Date()).getTime();
+        if (now - timestamp < 24 * 60 * 60 * 1e3) {
+          return false;
+        }
+      }
+    } catch (e) {
+    }
+    return true;
+  });
+  const handleDismissBanner = () => {
+    setShowBanner(false);
+    try {
+      localStorage.setItem(BANNER_STORAGE_KEY, (/* @__PURE__ */ new Date()).getTime().toString());
+    } catch (e) {
+      console.error("Failed to save banner dismissal", e);
+    }
+  };
   const handleSubscribe = async () => {
     if (!email || !email.includes("@")) {
       setSubscribeMessage("Please enter a valid email.");
@@ -50752,18 +50792,10 @@ function PortfolioSimulator({ initialData: initialData2 }) {
           "div",
           {
             style: { cursor: "pointer", padding: 4, position: "absolute", top: 8, right: 8, color: COLORS.textSecondary },
-            onClick: () => setShowBanner(false),
+            onClick: handleDismissBanner,
             children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { size: 16 })
           }
         )
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { backgroundColor: COLORS.accentLight, borderRadius: "16px", padding: "16px", marginBottom: "24px", display: "flex", alignItems: "center", gap: "12px" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Info, { size: 20, color: COLORS.primaryDark, style: { flexShrink: 0 } }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: "13px", color: COLORS.primaryDark, lineHeight: 1.5 }, children: [
-        "This tool is for ",
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "educational purposes only" }),
-        ". Results are hypothetical."
       ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.card, children: [
