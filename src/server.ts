@@ -1692,8 +1692,8 @@ const httpServer = createServer(
     }
 
     // Serve alias for legacy loader path -> our main widget HTML
-    if (req.method === "GET" && (url.pathname === "/assets/portfolio-optimizer.html" || url.pathname === "/assets/retirement-calculator.html")) {
-      const mainAssetPath = path.join(ASSETS_DIR, "portfolio-optimizer.html");
+    if (req.method === "GET" && (url.pathname === "/assets/portfolio-optimizer.html" || url.pathname === "/assets/crypto-portfolio-optimizer.html")) {
+      const mainAssetPath = path.join(ASSETS_DIR, "crypto-portfolio-optimizer.html");
       console.log(`[Debug Legacy] Request: ${url.pathname}, Main Path: ${mainAssetPath}, Exists: ${fs.existsSync(mainAssetPath)}`);
       if (fs.existsSync(mainAssetPath) && fs.statSync(mainAssetPath).isFile()) {
         res.writeHead(200, {
