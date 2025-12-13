@@ -628,7 +628,8 @@ export default function YieldOptimizer({ initialData }: { initialData?: any }) {
     }
     setSubscribeStatus("loading");
     try {
-      const response = await fetch("/api/subscribe", {
+      const serverUrl = window.location.hostname === "localhost" ? "" : "https://crypto-portfolio-optimizer-jn05.onrender.com";
+      const response = await fetch(`${serverUrl}/api/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, topicId: "crypto-yield-optimizer", topicName: "Crypto Yield Optimizer Updates" })
@@ -652,7 +653,8 @@ export default function YieldOptimizer({ initialData }: { initialData?: any }) {
     if (!feedbackText.trim()) return;
     setFeedbackStatus("submitting");
     try {
-      const response = await fetch("/api/track", {
+      const trackServerUrl = window.location.hostname === "localhost" ? "" : "https://crypto-portfolio-optimizer-jn05.onrender.com";
+      const response = await fetch(`${trackServerUrl}/api/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "user_feedback", data: { feedback: feedbackText, calculatorType: "Crypto Yield Optimizer" } })
@@ -671,7 +673,8 @@ export default function YieldOptimizer({ initialData }: { initialData?: any }) {
   const handleOptimizeClick = (strategyId: string) => {
     // Track click for analytics
     try {
-      fetch("/api/track", {
+      const clickServerUrl = window.location.hostname === "localhost" ? "" : "https://crypto-portfolio-optimizer-jn05.onrender.com";
+      fetch(`${clickServerUrl}/api/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "referral_click", data: { strategy: strategyId, portfolioValue: totalPortfolio } })
@@ -816,17 +819,17 @@ export default function YieldOptimizer({ initialData }: { initialData?: any }) {
         <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
           <div style={{ 
             flex: 1, 
-            backgroundColor: isUnderperforming ? "#FEF2F2" : COLORS.card, 
+            backgroundColor: isUnderperforming ? "#FFF5F5" : COLORS.card, 
             borderRadius: 16, 
             padding: 16, 
             textAlign: "center", 
-            border: isUnderperforming ? "2px solid #EF4444" : `1px solid ${COLORS.border}` 
+            border: isUnderperforming ? "2px solid #F87171" : `1px solid ${COLORS.border}` 
           }}>
-            <div style={{ fontSize: 12, color: isUnderperforming ? "#DC2626" : COLORS.textSecondary, marginBottom: 4 }}>
+            <div style={{ fontSize: 12, color: isUnderperforming ? "#EF4444" : COLORS.textSecondary, marginBottom: 4 }}>
               {isUnderperforming ? "📉 Current Yield" : "Current Yield"}
             </div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: isUnderperforming ? "#DC2626" : COLORS.textMain }}>${Math.round(currentAnnualYield).toLocaleString()}</div>
-            <div style={{ fontSize: 12, color: isUnderperforming ? "#EF4444" : COLORS.textSecondary }}>{currentYieldPercent || 0}% APY</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: isUnderperforming ? "#EF4444" : COLORS.textMain }}>${Math.round(currentAnnualYield).toLocaleString()}</div>
+            <div style={{ fontSize: 12, color: isUnderperforming ? "#F87171" : COLORS.textSecondary }}>{currentYieldPercent || 0}% APY</div>
           </div>
           <div style={{ flex: 1, backgroundColor: COLORS.accentLight, borderRadius: 16, padding: 16, textAlign: "center", border: `2px solid ${COLORS.primary}` }}>
             <div style={{ fontSize: 12, color: COLORS.primaryDark, marginBottom: 4 }}>Optimized Yield</div>

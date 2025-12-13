@@ -25227,7 +25227,8 @@ function YieldOptimizer({ initialData: initialData2 }) {
     }
     setSubscribeStatus("loading");
     try {
-      const response = await fetch("/api/subscribe", {
+      const serverUrl = window.location.hostname === "localhost" ? "" : "https://crypto-portfolio-optimizer-jn05.onrender.com";
+      const response = await fetch(`${serverUrl}/api/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, topicId: "crypto-yield-optimizer", topicName: "Crypto Yield Optimizer Updates" })
@@ -25255,7 +25256,8 @@ function YieldOptimizer({ initialData: initialData2 }) {
     if (!feedbackText.trim()) return;
     setFeedbackStatus("submitting");
     try {
-      const response = await fetch("/api/track", {
+      const trackServerUrl = window.location.hostname === "localhost" ? "" : "https://crypto-portfolio-optimizer-jn05.onrender.com";
+      const response = await fetch(`${trackServerUrl}/api/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "user_feedback", data: { feedback: feedbackText, calculatorType: "Crypto Yield Optimizer" } })
@@ -25276,7 +25278,8 @@ function YieldOptimizer({ initialData: initialData2 }) {
   };
   const handleOptimizeClick = (strategyId) => {
     try {
-      fetch("/api/track", {
+      const clickServerUrl = window.location.hostname === "localhost" ? "" : "https://crypto-portfolio-optimizer-jn05.onrender.com";
+      fetch(`${clickServerUrl}/api/track`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ event: "referral_click", data: { strategy: strategyId, portfolioValue: totalPortfolio } })
@@ -25399,18 +25402,18 @@ function YieldOptimizer({ initialData: initialData2 }) {
       return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 12, marginBottom: 20 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
           flex: 1,
-          backgroundColor: isUnderperforming ? "#FEF2F2" : COLORS.card,
+          backgroundColor: isUnderperforming ? "#FFF5F5" : COLORS.card,
           borderRadius: 16,
           padding: 16,
           textAlign: "center",
-          border: isUnderperforming ? "2px solid #EF4444" : `1px solid ${COLORS.border}`
+          border: isUnderperforming ? "2px solid #F87171" : `1px solid ${COLORS.border}`
         }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 12, color: isUnderperforming ? "#DC2626" : COLORS.textSecondary, marginBottom: 4 }, children: isUnderperforming ? "\u{1F4C9} Current Yield" : "Current Yield" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 24, fontWeight: 800, color: isUnderperforming ? "#DC2626" : COLORS.textMain }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 12, color: isUnderperforming ? "#EF4444" : COLORS.textSecondary, marginBottom: 4 }, children: isUnderperforming ? "\u{1F4C9} Current Yield" : "Current Yield" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 24, fontWeight: 800, color: isUnderperforming ? "#EF4444" : COLORS.textMain }, children: [
             "$",
             Math.round(currentAnnualYield).toLocaleString()
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, color: isUnderperforming ? "#EF4444" : COLORS.textSecondary }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, color: isUnderperforming ? "#F87171" : COLORS.textSecondary }, children: [
             currentYieldPercent || 0,
             "% APY"
           ] })
