@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { createRoot } from "react-dom/client";
 
-import PortfolioSimulator from "./PortfolioSimulator";
+import YieldOptimizer from "./YieldOptimizer";
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -107,26 +107,11 @@ const getHydrationData = (): any => {
   return {};
 };
 
-console.log("[Main] Crypto Portfolio Optimizer main.tsx loading...");
+console.log("[Main] Crypto Yield Optimizer main.tsx loading...");
 
-// App wrapper with tool switching
-const COLORS = {
-  primary: "#56C596",
-  primaryDark: "#3aa87b",
-  bg: "#FAFAFA",
-  textMain: "#1A1A1A",
-  textSecondary: "#9CA3AF",
-  border: "#F3F4F6",
-  accentLight: "#E6F7F0",
-  blue: "#5D9CEC"
-};
-
+// App wrapper - Yield Optimizer only
 function App({ initialData }: { initialData: any }) {
-  return (
-    <div style={{ backgroundColor: COLORS.bg }}>
-      <PortfolioSimulator initialData={initialData} />
-    </div>
-  );
+  return <YieldOptimizer initialData={initialData} />;
 }
 
 // Get initial data

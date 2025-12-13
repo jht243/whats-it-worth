@@ -124,41 +124,42 @@ function classifyDevice(userAgent?: string | null): string {
 }
 
 function computeSummary(args: any) {
-  const initialInvestment = Number(args.initial_investment) || Number(args.current_retirement_savings) || 0;
-  const annualContribution = Number(args.annual_contribution) || (Number(args.monthly_contribution) || 0) * 12;
-  const timeHorizon = Number(args.time_horizon) || 10;
-  const riskTolerance = args.risk_tolerance || "balanced";
-  const investmentGoal = args.investment_goal || "growth";
+  // Calculate total portfolio value from crypto holdings
+  const cryptoHoldings = ['btc', 'eth', 'sol', 'ada', 'link', 'avax', 'dot', 'xrp', 'bnb', 'doge', 'matic', 'atom', 'uni', 'other'];
+  const totalPortfolio = cryptoHoldings.reduce((sum, coin) => {
+    return sum + (Number(args[coin]) || 0);
+  }, 0);
   
-  // Calculate expected return based on risk tolerance
-  const expectedReturns: Record<string, number> = {
-    conservative: 0.05,
-    balanced: 0.07,
-    aggressive: 0.10
+  const currentYieldPercent = Number(args.current_yield_percent) || 0;
+  const riskPreference = args.risk_preference || "medium";
+  
+  // Calculate potential yield based on risk preference
+  const optimizedApyByRisk: Record<string, number> = {
+    low: 4,      // Conservative staking strategies
+    medium: 6,   // Balanced DeFi strategies
+    high: 10     // Aggressive yield farming
   };
-  const expectedReturn = expectedReturns[riskTolerance] || 0.07;
+  const optimizedApy = optimizedApyByRisk[riskPreference] || 6;
   
-  // Project future value using compound growth formula
-  let projectedValue = initialInvestment;
-  for (let year = 0; year < timeHorizon; year++) {
-    projectedValue = projectedValue * (1 + expectedReturn) + annualContribution;
-  }
+  // Calculate earnings
+  const currentAnnualYield = totalPortfolio * (currentYieldPercent / 100);
+  const potentialAnnualYield = totalPortfolio * (optimizedApy / 100);
+  const additionalYield = potentialAnnualYield - currentAnnualYield;
   
-  // Determine portfolio health status
-  const totalContributions = initialInvestment + (annualContribution * timeHorizon);
-  const growthMultiple = projectedValue / (totalContributions || 1);
-  
-  let portfolioStatus = "Needs Review";
-  if (growthMultiple > 2.0) portfolioStatus = "Strong Growth";
-  else if (growthMultiple > 1.5) portfolioStatus = "On Track";
-  else if (growthMultiple > 1.2) portfolioStatus = "Moderate";
+  // Determine optimization status
+  let yieldStatus = "Not Optimized";
+  if (currentYieldPercent >= optimizedApy) yieldStatus = "Well Optimized";
+  else if (currentYieldPercent >= optimizedApy * 0.7) yieldStatus = "Partially Optimized";
+  else if (currentYieldPercent > 0) yieldStatus = "Under-Optimized";
 
   return {
-    projected_value: Math.round(projectedValue),
-    portfolio_status: portfolioStatus,
-    expected_return: Math.round(expectedReturn * 100),
-    growth_multiple: Math.round(growthMultiple * 10) / 10,
-    total_contributions: Math.round(totalContributions)
+    total_portfolio: Math.round(totalPortfolio),
+    current_yield_percent: currentYieldPercent,
+    optimized_apy: optimizedApy,
+    current_annual_yield: Math.round(currentAnnualYield),
+    potential_annual_yield: Math.round(potentialAnnualYield),
+    additional_yield: Math.round(additionalYield),
+    yield_status: yieldStatus
   };
 }
 
@@ -219,36 +220,39 @@ function widgetMeta(widget: CryptoPortfolioOptimizerWidget, bustCache: boolean =
   return {
     "openai/outputTemplate": templateUri,
     "openai/widgetDescription":
-      "A Monte Carlo crypto portfolio simulator that projects investment growth based on asset allocation, time horizon, and contribution strategy. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
+      "A crypto yield optimizer educational tool that helps users simulate the best DeFi strategies to earn passive income on crypto portfolios (Bitcoin, Ethereum, Solana, etc.). Shows yield strategies like staking, lending, and liquidity provision with APY estimates. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
     "openai/componentDescriptions": {
-      "allocation-form": "Input form for asset allocation percentages or dollar amounts across stocks, bonds, cash, real estate, crypto, and other investments.",
-      "projection-chart": "Interactive chart showing projected portfolio growth with confidence intervals over time.",
-      "stats-card": "Card displaying expected return, volatility, Sharpe ratio, and other portfolio statistics.",
+      "holdings-form": "Input form for crypto holdings (BTC, ETH, SOL, etc.) with dollar values or coin amounts.",
+      "yield-display": "Display showing potential annual yield earnings based on optimized strategies.",
+      "strategy-cards": "Cards showing recommended yield strategies with APY ranges, risk levels, and referral links.",
     },
     "openai/widgetKeywords": [
-      "portfolio",
-      "asset allocation",
-      "stocks",
-      "bonds",
-      "investment",
-      "monte carlo",
-      "diversification",
-      "risk tolerance",
       "crypto",
-      "401k"
+      "yield",
+      "DeFi",
+      "staking",
+      "lending",
+      "bitcoin",
+      "ethereum",
+      "solana",
+      "APY",
+      "passive income",
+      "liquidity",
+      "earn",
+      "interest"
     ],
     "openai/sampleConversations": [
-      { "user": "Optimize my crypto portfolio", "assistant": "Here is the Crypto Portfolio Optimizer. You can set your asset allocation, time horizon, and contribution strategy to see projected growth." },
-      { "user": "I have $100,000 to invest for 20 years with moderate risk tolerance", "assistant": "I'll set up a balanced portfolio projection with your $100,000 initial investment over a 20-year horizon." },
-      { "user": "What allocation should I use for growth with $50k in stocks and $30k in crypto?", "assistant": "I've loaded your current allocation. The simulator will project your portfolio growth based on historical asset class returns." },
+      { "user": "How can I earn yield on my crypto?", "assistant": "Here is the Crypto Yield Optimizer. Enter your crypto holdings to see how much passive income you could be earning with DeFi strategies." },
+      { "user": "I have 2 BTC and 10 ETH, what yield can I get?", "assistant": "I'll calculate the potential yield on your Bitcoin and Ethereum holdings using the best available DeFi strategies." },
+      { "user": "What's the best way to earn interest on Solana?", "assistant": "I've loaded the yield optimizer with Solana strategies. You can see staking, lending, and other options with their APY ranges." },
     ],
     "openai/starterPrompts": [
-      "Optimize my crypto portfolio",
-      "Analyze my asset allocation",
-      "Project my investment growth",
-      "What's the best allocation for growth?",
-      "Simulate my portfolio for 10 years",
-      "I want to invest $50,000",
+      "How can I earn yield on my crypto?",
+      "Optimize my crypto for passive income",
+      "What APY can I get on Bitcoin?",
+      "Best DeFi strategies for Ethereum",
+      "How much could I earn staking?",
+      "Find yield opportunities for my portfolio",
     ],
     "openai/widgetPrefersBorder": true,
     "openai/widgetCSP": {
@@ -273,12 +277,12 @@ function widgetMeta(widget: CryptoPortfolioOptimizerWidget, bustCache: boolean =
 const widgets: CryptoPortfolioOptimizerWidget[] = [
   {
     id: "crypto-portfolio-optimizer",
-    title: "Crypto Portfolio Optimizer — Monte Carlo investment simulator",
+    title: "Crypto Yield Optimizer — Simulate the best DeFi strategies to optimize passive income on your crypto",
     templateUri: `ui://widget/crypto-portfolio-optimizer.html?v=${VERSION}`,
     invoking:
-      "Opening the Crypto Portfolio Optimizer...",
+      "Opening the Crypto Yield Optimizer...",
     invoked:
-      "Here is the Crypto Portfolio Optimizer. Set your asset allocation, time horizon, and contribution strategy to project your investment growth.",
+      "Here is the Crypto Yield Optimizer. Enter your crypto holdings to see how much passive income you could be earning with staking, lending, and other DeFi strategies.",
     html: readWidgetHtml("crypto-portfolio-optimizer"),
   },
 ];
@@ -294,37 +298,28 @@ widgets.forEach((widget) => {
 const toolInputSchema = {
   type: "object",
   properties: {
-    current_age: { type: "number", description: "Current age of the user." },
-    retirement_age: { type: "number", description: "Target retirement age." },
-    time_horizon: { type: "number", description: "Investment time horizon in years." },
-    initial_investment: { type: "number", description: "Total initial investment amount." },
-    annual_contribution: { type: "number", description: "Annual contribution amount." },
-    monthly_contribution: { type: "number", description: "Monthly contribution amount." },
-    risk_tolerance: { type: "string", enum: ["conservative", "balanced", "aggressive"], description: "Risk tolerance level." },
-    investment_goal: { type: "string", enum: ["growth", "income", "preservation"], description: "Primary investment goal." },
-    // Asset allocation fields (dollar amounts)
-    stocks: { type: "number", description: "Dollar amount in stocks." },
-    bonds: { type: "number", description: "Dollar amount in bonds." },
-    cash: { type: "number", description: "Dollar amount in cash." },
-    real_estate: { type: "number", description: "Dollar amount in real estate." },
-    crypto: { type: "number", description: "Dollar amount in cryptocurrency." },
-    four_oh_one_k: { type: "number", description: "Dollar amount in 401k." },
-    alt_investments: { type: "number", description: "Dollar amount in alternative investments." },
-    startups: { type: "number", description: "Dollar amount in startup investments." },
-    other: { type: "number", description: "Dollar amount in other investments." },
-    // Asset allocation fields (percent amounts)
-    stocks_percent: { type: "number", description: "Percentage allocation in stocks." },
-    bonds_percent: { type: "number", description: "Percentage allocation in bonds." },
-    cash_percent: { type: "number", description: "Percentage allocation in cash." },
-    real_estate_percent: { type: "number", description: "Percentage allocation in real estate." },
-    crypto_percent: { type: "number", description: "Percentage allocation in cryptocurrency." },
-    four_oh_one_k_percent: { type: "number", description: "Percentage allocation in 401k." },
-    alt_investments_percent: { type: "number", description: "Percentage allocation in alternative investments." },
-    startups_percent: { type: "number", description: "Percentage allocation in startup investments." },
-    other_percent: { type: "number", description: "Percentage allocation in other investments." },
-    // Legacy/Compatibility fields
-    current_retirement_savings: { type: "number", description: "Total current retirement savings." },
-    annual_pre_tax_income: { type: "number", description: "Annual pre-tax income." }
+    // Crypto holdings (USD values)
+    btc: { type: "number", description: "Dollar value of Bitcoin holdings." },
+    eth: { type: "number", description: "Dollar value of Ethereum holdings." },
+    sol: { type: "number", description: "Dollar value of Solana holdings." },
+    ada: { type: "number", description: "Dollar value of Cardano holdings." },
+    link: { type: "number", description: "Dollar value of Chainlink holdings." },
+    avax: { type: "number", description: "Dollar value of Avalanche holdings." },
+    dot: { type: "number", description: "Dollar value of Polkadot holdings." },
+    xrp: { type: "number", description: "Dollar value of XRP holdings." },
+    bnb: { type: "number", description: "Dollar value of BNB holdings." },
+    doge: { type: "number", description: "Dollar value of Dogecoin holdings." },
+    matic: { type: "number", description: "Dollar value of Polygon (MATIC) holdings." },
+    atom: { type: "number", description: "Dollar value of Cosmos (ATOM) holdings." },
+    uni: { type: "number", description: "Dollar value of Uniswap holdings." },
+    other: { type: "number", description: "Dollar value of other crypto holdings." },
+    // Crypto holdings (coin amounts)
+    btc_amount: { type: "number", description: "Number of Bitcoin coins owned." },
+    eth_amount: { type: "number", description: "Number of Ethereum coins owned." },
+    sol_amount: { type: "number", description: "Number of Solana coins owned." },
+    // Yield settings
+    current_yield_percent: { type: "number", description: "Current APY the user is earning on their crypto (0-100)." },
+    risk_preference: { type: "string", enum: ["low", "medium", "high"], description: "Preferred risk level for yield strategies." },
   },
   required: [],
   additionalProperties: false,
@@ -332,62 +327,56 @@ const toolInputSchema = {
 } as const;
 
 const toolInputParser = z.object({
-  current_age: z.number().optional(),
-  retirement_age: z.number().optional(),
-  time_horizon: z.number().optional(),
-  initial_investment: z.number().optional(),
-  annual_contribution: z.number().optional(),
-  monthly_contribution: z.number().optional(),
-  risk_tolerance: z.enum(["conservative", "balanced", "aggressive"]).optional(),
-  investment_goal: z.enum(["growth", "income", "preservation"]).optional(),
-  // Asset allocation fields (dollar)
-  stocks: z.number().optional(),
-  bonds: z.number().optional(),
-  cash: z.number().optional(),
-  real_estate: z.number().optional(),
-  crypto: z.number().optional(),
-  four_oh_one_k: z.number().optional(),
-  alt_investments: z.number().optional(),
-  startups: z.number().optional(),
+  // Crypto holdings (USD values)
+  btc: z.number().optional(),
+  eth: z.number().optional(),
+  sol: z.number().optional(),
+  ada: z.number().optional(),
+  link: z.number().optional(),
+  avax: z.number().optional(),
+  dot: z.number().optional(),
+  xrp: z.number().optional(),
+  bnb: z.number().optional(),
+  doge: z.number().optional(),
+  matic: z.number().optional(),
+  atom: z.number().optional(),
+  uni: z.number().optional(),
   other: z.number().optional(),
-  // Asset allocation fields (percent)
-  stocks_percent: z.number().optional(),
-  bonds_percent: z.number().optional(),
-  cash_percent: z.number().optional(),
-  real_estate_percent: z.number().optional(),
-  crypto_percent: z.number().optional(),
-  four_oh_one_k_percent: z.number().optional(),
-  alt_investments_percent: z.number().optional(),
-  startups_percent: z.number().optional(),
-  other_percent: z.number().optional(),
-  current_retirement_savings: z.number().optional(),
-  annual_pre_tax_income: z.number().optional(),
+  // Crypto holdings (coin amounts)
+  btc_amount: z.number().optional(),
+  eth_amount: z.number().optional(),
+  sol_amount: z.number().optional(),
+  // Yield settings
+  current_yield_percent: z.number().optional(),
+  risk_preference: z.enum(["low", "medium", "high"]).optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this for portfolio optimization. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
+    "Use this for crypto yield optimization. Helps users find the best DeFi strategies to earn passive income on their crypto holdings. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
     properties: {
       ready: { type: "boolean" },
       timestamp: { type: "string" },
-      initial_investment: { type: "number" },
-      annual_contribution: { type: "number" },
-      time_horizon: { type: "number" },
-      risk_tolerance: { type: "string", enum: ["conservative", "balanced", "aggressive"] },
-      investment_goal: { type: "string", enum: ["growth", "income", "preservation"] },
+      btc: { type: "number" },
+      eth: { type: "number" },
+      sol: { type: "number" },
+      current_yield_percent: { type: "number" },
+      risk_preference: { type: "string", enum: ["low", "medium", "high"] },
       input_source: { type: "string", enum: ["user", "default"] },
       summary: {
         type: "object",
         properties: {
-          projected_value: { type: ["number", "null"] },
-          portfolio_status: { type: ["string", "null"] },
-          expected_return: { type: ["number", "null"] },
-          growth_multiple: { type: ["number", "null"] },
-          total_contributions: { type: ["number", "null"] },
+          total_portfolio: { type: ["number", "null"] },
+          current_yield_percent: { type: ["number", "null"] },
+          optimized_apy: { type: ["number", "null"] },
+          current_annual_yield: { type: ["number", "null"] },
+          potential_annual_yield: { type: ["number", "null"] },
+          additional_yield: { type: ["number", "null"] },
+          yield_status: { type: ["string", "null"] },
         },
       },
       suggested_followups: {
@@ -414,7 +403,7 @@ const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
   name: widget.title,
   description:
-    "HTML template for the Portfolio allocation and investment Portfolio Optimizer widget.",
+    "HTML template for the Crypto Yield Optimizer widget that helps find DeFi strategies for passive income.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
@@ -423,18 +412,18 @@ const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
   uriTemplate: widget.templateUri,
   name: widget.title,
   description:
-    "Template descriptor for the Portfolio allocation and investment Portfolio Optimizer widget.",
+    "Template descriptor for the Crypto Yield Optimizer widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
 
-function createCryptoPortfolioOptimizerServer(): Server {
+function createCryptoYieldOptimizerServer(): Server {
   const server = new Server(
     {
-      name: "crypto-portfolio-optimizer",
+      name: "crypto-yield-optimizer",
       version: "0.1.0",
       description:
-        "Crypto Portfolio Optimizer is a comprehensive app for analyzing portfolio allocation.",
+        "Crypto Yield Optimizer helps users find the best DeFi strategies to earn passive income on their crypto holdings.",
     },
     {
       capabilities: {
@@ -556,71 +545,22 @@ function createCryptoPortfolioOptimizerServer(): Server {
             return Number.isFinite(n) ? Math.round(n) : null;
           };
 
-          // Infer portfolio parameters from user text
+          // Infer crypto holdings from user text
           
-          // Time horizon (e.g., "10 years", "for 20 years")
-          if (args.time_horizon === undefined) {
-             const horizonMatch = userText.match(/(?:for\s+)?(\d{1,2})\s*(?:years?|yrs?)\b/i);
-             if (horizonMatch) {
-               const years = parseInt(horizonMatch[1], 10);
-               if (years > 0 && years <= 50) args.time_horizon = years;
-             }
-          }
-          
-          // Initial investment (e.g., "$100k", "$50,000 to invest")
-          if (args.initial_investment === undefined) {
-             const investMatch = userText.match(/\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k)?\s*(?:to invest|initial|starting|investment)?/i);
-             if (investMatch) {
-                let amount = parseFloat(investMatch[1].replace(/,/g, ''));
-                if (investMatch[2]?.toLowerCase() === 'k') amount *= 1000;
-                if (amount > 0) args.initial_investment = amount;
-             }
-          }
-          
-          // Annual contribution (e.g., "$6000 per year", "$500/month")
-          if (args.annual_contribution === undefined) {
-             const annualMatch = userText.match(/\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k)?\s*(?:per year|annually|yearly|\/year)/i);
-             if (annualMatch) {
-                let amount = parseFloat(annualMatch[1].replace(/,/g, ''));
-                if (annualMatch[2]?.toLowerCase() === 'k') amount *= 1000;
-                if (amount > 0) args.annual_contribution = amount;
-             }
-             // Also check for monthly contributions
-             const monthlyMatch = userText.match(/\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k)?\s*(?:per month|monthly|\/month|\/mo)/i);
-             if (monthlyMatch) {
-                let amount = parseFloat(monthlyMatch[1].replace(/,/g, ''));
-                if (monthlyMatch[2]?.toLowerCase() === 'k') amount *= 1000;
-                if (amount > 0) args.monthly_contribution = amount;
-             }
-          }
-          
-          // Risk tolerance from keywords
-          if (args.risk_tolerance === undefined) {
-             if (/conservative|low risk|safe|cautious/i.test(userText)) args.risk_tolerance = "conservative";
-             else if (/aggressive|high risk|growth|risky/i.test(userText)) args.risk_tolerance = "aggressive";
-             else if (/balanced|moderate|medium/i.test(userText)) args.risk_tolerance = "balanced";
-          }
-          
-          // Investment goal from keywords
-          if (args.investment_goal === undefined) {
-             if (/growth|grow|maximize|aggressive/i.test(userText)) args.investment_goal = "growth";
-             else if (/income|dividend|yield|passive/i.test(userText)) args.investment_goal = "income";
-             else if (/preservation|protect|capital|safe/i.test(userText)) args.investment_goal = "preservation";
-          }
-          
-          // Asset allocation inference - DOLLAR amounts (e.g., "$100,000 in stocks", "$50k in bonds")
-          const dollarPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
-            { key: "stocks", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:stocks?|equities?|equity|stock market)/i },
-            { key: "bonds", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:bonds?|fixed income|treasur(?:y|ies))/i },
-            { key: "cash", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:cash|savings?|money market|liquid)/i },
-            { key: "real_estate", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:real estate|reits?|property|properties)/i },
-            { key: "crypto", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:crypto(?:currency)?|bitcoin|btc|ethereum|eth)/i },
-            { key: "four_oh_one_k", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:401\s*k|401\(k\)|retirement account)/i },
-            { key: "alt_investments", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:alt(?:ernative)?\s*invest(?:ment)?s?|commodities|hedge funds?|private equity)/i },
-            { key: "startups", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+)?(?:startups?|angel|venture|early[- ]stage)/i },
+          // Crypto holdings patterns (e.g., "$10k in bitcoin", "2 BTC", "$50,000 worth of ETH")
+          const cryptoPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
+            { key: "btc", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:bitcoin|btc)/i },
+            { key: "eth", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:ethereum|eth|ether)/i },
+            { key: "sol", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:solana|sol)/i },
+            { key: "ada", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:cardano|ada)/i },
+            { key: "link", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:chainlink|link)/i },
+            { key: "avax", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:avalanche|avax)/i },
+            { key: "dot", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:polkadot|dot)/i },
+            { key: "matic", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:polygon|matic)/i },
+            { key: "atom", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:cosmos|atom)/i },
           ];
           
-          for (const { key, regex } of dollarPatterns) {
+          for (const { key, regex } of cryptoPatterns) {
             if ((args as any)[key] === undefined) {
               const match = userText.match(regex);
               if (match) {
@@ -632,27 +572,37 @@ function createCryptoPortfolioOptimizerServer(): Server {
             }
           }
           
-          // Asset allocation inference - PERCENT amounts (e.g., "60% stocks", "30% in bonds")
-          const percentPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
-            { key: "stocks_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:stocks?|equities?|equity|stock market)/i },
-            { key: "bonds_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:bonds?|fixed income|treasur(?:y|ies))/i },
-            { key: "cash_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:cash|savings?|money market|liquid)/i },
-            { key: "real_estate_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:real estate|reits?|property|properties)/i },
-            { key: "crypto_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:crypto(?:currency)?|bitcoin|btc|ethereum|eth)/i },
-            { key: "four_oh_one_k_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:401\s*k|401\(k\)|retirement account)/i },
-            { key: "alt_investments_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:alt(?:ernative)?\s*invest(?:ment)?s?|commodities|hedge funds?|private equity)/i },
-            { key: "startups_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:startups?|angel|venture|early[- ]stage)/i },
-            { key: "other_percent", regex: /(\d+(?:\.\d+)?)\s*%\s*(?:in\s+)?(?:other|miscellaneous|misc)/i },
+          // Coin amount patterns (e.g., "2 BTC", "10 ETH", "100 SOL")
+          const coinAmountPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
+            { key: "btc_amount", regex: /(\d+(?:\.\d+)?)\s*(?:bitcoin|btc)\b/i },
+            { key: "eth_amount", regex: /(\d+(?:\.\d+)?)\s*(?:ethereum|eth|ether)\b/i },
+            { key: "sol_amount", regex: /(\d+(?:\.\d+)?)\s*(?:solana|sol)\b/i },
           ];
           
-          for (const { key, regex } of percentPatterns) {
+          for (const { key, regex } of coinAmountPatterns) {
             if ((args as any)[key] === undefined) {
               const match = userText.match(regex);
               if (match) {
-                const percent = parseFloat(match[1]);
-                if (percent > 0 && percent <= 100) (args as any)[key] = percent;
+                const amount = parseFloat(match[1]);
+                if (amount > 0) (args as any)[key] = amount;
               }
             }
+          }
+          
+          // Current yield percent (e.g., "earning 3%", "getting 5% APY")
+          if (args.current_yield_percent === undefined) {
+             const yieldMatch = userText.match(/(?:earning|getting|making|receiving)\s*(\d+(?:\.\d+)?)\s*%/i);
+             if (yieldMatch) {
+               const percent = parseFloat(yieldMatch[1]);
+               if (percent >= 0 && percent <= 100) args.current_yield_percent = percent;
+             }
+          }
+          
+          // Risk preference from keywords
+          if (args.risk_preference === undefined) {
+             if (/low risk|safe|cautious|conservative|staking only/i.test(userText)) args.risk_preference = "low";
+             else if (/high risk|aggressive|yield farming|maximum yield/i.test(userText)) args.risk_preference = "high";
+             else if (/medium|moderate|balanced/i.test(userText)) args.risk_preference = "medium";
           }
 
         } catch (e) {
@@ -667,16 +617,16 @@ function createCryptoPortfolioOptimizerServer(): Server {
 
         // Infer likely user query from parameters
         const inferredQuery = [] as string[];
-        if (args.initial_investment) inferredQuery.push(`initial: $${args.initial_investment.toLocaleString()}`);
-        if (args.annual_contribution) inferredQuery.push(`annual: $${args.annual_contribution.toLocaleString()}`);
-        if (args.time_horizon) inferredQuery.push(`horizon: ${args.time_horizon}yrs`);
-        if (args.risk_tolerance) inferredQuery.push(`risk: ${args.risk_tolerance}`);
-        if (args.investment_goal) inferredQuery.push(`goal: ${args.investment_goal}`);
+        if (args.btc) inferredQuery.push(`BTC: $${args.btc.toLocaleString()}`);
+        if (args.eth) inferredQuery.push(`ETH: $${args.eth.toLocaleString()}`);
+        if (args.sol) inferredQuery.push(`SOL: $${args.sol.toLocaleString()}`);
+        if (args.current_yield_percent) inferredQuery.push(`current APY: ${args.current_yield_percent}%`);
+        if (args.risk_preference) inferredQuery.push(`risk: ${args.risk_preference}`);
 
         logAnalytics("tool_call_success", {
           toolName: request.params.name,
           params: args,
-          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Crypto Portfolio Optimizer",
+          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Crypto Yield Optimizer",
           responseTime,
 
           device: deviceCategory,
@@ -697,7 +647,7 @@ function createCryptoPortfolioOptimizerServer(): Server {
         console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
 
         // Build structured content once so we can log it and return it.
-        // For the portfolio optimizer, expose fields relevant to portfolio allocation
+        // For the yield optimizer, expose fields relevant to crypto holdings and yield
         const structured = {
           ready: true,
           timestamp: new Date().toISOString(),
@@ -706,10 +656,10 @@ function createCryptoPortfolioOptimizerServer(): Server {
           // Summary + follow-ups for natural language UX
           summary: computeSummary(args),
           suggested_followups: [
-            "What if I increase my contributions?",
-            "How does a more aggressive allocation look?",
-            "What's my projected value in 20 years?",
-            "Should I diversify into crypto or real estate?"
+            "What's the safest way to earn yield?",
+            "How can I maximize my APY?",
+            "What strategies work for Bitcoin?",
+            "Is staking or lending better for ETH?"
           ],
         } as const;
 
@@ -732,14 +682,14 @@ function createCryptoPortfolioOptimizerServer(): Server {
 
         // Log success analytics
         try {
-          // Check for "empty" result - when no main calculation inputs are provided
-          const hasMainInputs = args.initial_investment || args.annual_contribution || args.time_horizon || args.risk_tolerance;
+          // Check for "empty" result - when no main crypto inputs are provided
+          const hasMainInputs = args.btc || args.eth || args.sol || args.btc_amount || args.eth_amount;
           
           if (!hasMainInputs) {
              logAnalytics("tool_call_empty", {
                toolName: request.params.name,
                params: request.params.arguments || {},
-               reason: "No portfolio inputs provided"
+               reason: "No crypto holdings provided"
              });
           } else {
           logAnalytics("tool_call_success", {
@@ -754,11 +704,12 @@ function createCryptoPortfolioOptimizerServer(): Server {
         } catch {}
 
         // Build content narration for the model
-        const contentText = args.initial_investment || args.stocks || args.stocks_percent
-          ? `Portfolio analysis ready with ${args.time_horizon || 10}-year projection. ${
-              args.initial_investment ? `Initial investment: $${Number(args.initial_investment).toLocaleString()}.` : ''
-            } ${args.risk_tolerance ? `Risk profile: ${args.risk_tolerance}.` : ''} Use the interactive widget to adjust allocation and run Monte Carlo simulations.`
-          : "Crypto Portfolio Optimizer is ready. Enter your asset allocation, time horizon, and contribution strategy to project your investment growth.";
+        const summary = computeSummary(args);
+        const contentText = args.btc || args.eth || args.sol
+          ? `Crypto Yield Optimizer ready. Portfolio value: $${summary.total_portfolio.toLocaleString()}. ${
+              summary.potential_annual_yield > 0 ? `Potential yield: $${summary.potential_annual_yield.toLocaleString()}/year at ~${summary.optimized_apy}% APY.` : ''
+            } Use the widget to explore yield strategies.`
+          : "Crypto Yield Optimizer is ready. Enter your crypto holdings to see how much passive income you could be earning with DeFi strategies.";
 
         return {
           content: [{ type: "text", text: contentText }],
@@ -1628,7 +1579,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
 async function handleSseRequest(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const server = createCryptoPortfolioOptimizerServer();
+  const server = createCryptoYieldOptimizerServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 

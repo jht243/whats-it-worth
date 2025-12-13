@@ -11,8 +11,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const htmlPath = path.join(__dirname, '../assets/portfolio-optimizer.html');
-const jsPath = path.join(__dirname, '../assets/portfolio-optimizer.js');
+const htmlPath = path.join(__dirname, '../assets/crypto-portfolio-optimizer.html');
+const jsPath = path.join(__dirname, '../assets/crypto-portfolio-optimizer.js');
 
 console.log('[Inline Bundle] Reading files...');
 const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
