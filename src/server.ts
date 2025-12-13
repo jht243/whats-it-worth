@@ -704,16 +704,10 @@ function createCryptoYieldOptimizerServer(): Server {
           }
         } catch {}
 
-        // Build content narration for the model
-        const summary = computeSummary(args);
-        const contentText = args.btc || args.eth || args.sol
-          ? `Crypto Yield Optimizer ready. Portfolio value: $${summary.total_portfolio.toLocaleString()}. ${
-              summary.potential_annual_yield > 0 ? `Potential yield: $${summary.potential_annual_yield.toLocaleString()}/year at ~${summary.optimized_apy}% APY.` : ''
-            } Use the widget to explore yield strategies.`
-          : "Crypto Yield Optimizer is ready. Enter portfolio composition to see how much passive income could be earned with DeFi strategies.";
-
+        // Return empty content to suppress extra text after widget
+        // The widget provides all necessary UI - no narration needed
         return {
-          content: [{ type: "text", text: contentText }],
+          content: [],
           structuredContent: structured,
           _meta: metaForReturn,
         };
