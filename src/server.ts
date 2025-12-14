@@ -30,7 +30,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-type CryptoPortfolioOptimizerWidget = {
+type TravelChecklistWidget = {
   id: string;
   title: string;
   templateUri: string;
@@ -124,42 +124,31 @@ function classifyDevice(userAgent?: string | null): string {
 }
 
 function computeSummary(args: any) {
-  // Calculate total portfolio value from crypto holdings
-  const cryptoHoldings = ['btc', 'eth', 'sol', 'ada', 'link', 'avax', 'dot', 'xrp', 'bnb', 'doge', 'matic', 'atom', 'uni', 'other'];
-  const totalPortfolio = cryptoHoldings.reduce((sum, coin) => {
-    return sum + (Number(args[coin]) || 0);
-  }, 0);
+  // Compute travel checklist summary
+  const destination = args.destination || "Not specified";
+  const tripDuration = Number(args.trip_duration) || 5;
+  const isInternational = Boolean(args.is_international);
+  const climate = args.climate || "summer";
+  const purpose = args.purpose || "leisure";
+  const travelers = Number(args.travelers) || 1;
   
-  const currentYieldPercent = Number(args.current_yield_percent) || 0;
-  const riskPreference = args.risk_preference || "medium";
+  // Estimate checklist items based on trip profile
+  let estimatedItems = 25; // Base items
+  if (isInternational) estimatedItems += 5; // Extra documents
+  if (tripDuration > 7) estimatedItems += 5; // More clothing
+  if (purpose === "business") estimatedItems += 3;
+  if (purpose === "adventure") estimatedItems += 8;
+  if (travelers > 1) estimatedItems += 5;
   
-  // Calculate potential yield based on risk preference
-  const optimizedApyByRisk: Record<string, number> = {
-    low: 4,      // Conservative staking strategies
-    medium: 6,   // Balanced DeFi strategies
-    high: 10     // Aggressive yield farming
-  };
-  const optimizedApy = optimizedApyByRisk[riskPreference] || 6;
-  
-  // Calculate earnings
-  const currentAnnualYield = totalPortfolio * (currentYieldPercent / 100);
-  const potentialAnnualYield = totalPortfolio * (optimizedApy / 100);
-  const additionalYield = potentialAnnualYield - currentAnnualYield;
-  
-  // Determine optimization status
-  let yieldStatus = "Not Optimized";
-  if (currentYieldPercent >= optimizedApy) yieldStatus = "Well Optimized";
-  else if (currentYieldPercent >= optimizedApy * 0.7) yieldStatus = "Partially Optimized";
-  else if (currentYieldPercent > 0) yieldStatus = "Under-Optimized";
-
   return {
-    total_portfolio: Math.round(totalPortfolio),
-    current_yield_percent: currentYieldPercent,
-    optimized_apy: optimizedApy,
-    current_annual_yield: Math.round(currentAnnualYield),
-    potential_annual_yield: Math.round(potentialAnnualYield),
-    additional_yield: Math.round(additionalYield),
-    yield_status: yieldStatus
+    destination,
+    trip_duration: tripDuration,
+    is_international: isInternational,
+    climate,
+    purpose,
+    travelers,
+    estimated_items: estimatedItems,
+    trip_type: isInternational ? "International" : "Domestic"
   };
 }
 
@@ -212,58 +201,56 @@ function readWidgetHtml(componentName: string): string {
 // Added timestamp suffix to force cache invalidation for width fix
 const VERSION = (process.env.RENDER_GIT_COMMIT?.slice(0, 7) || Date.now().toString()) + '-' + Date.now();
 
-function widgetMeta(widget: CryptoPortfolioOptimizerWidget, bustCache: boolean = false) {
+function widgetMeta(widget: TravelChecklistWidget, bustCache: boolean = false) {
   const templateUri = bustCache
-    ? `ui://widget/crypto-portfolio-optimizer.html?v=${VERSION}`
+    ? `ui://widget/travel-checklist.html?v=${VERSION}`
     : widget.templateUri;
 
   return {
     "openai/outputTemplate": templateUri,
     "openai/widgetDescription":
-      "A crypto yield optimizer educational tool that helps users simulate the best DeFi strategies to earn passive income on crypto portfolios (Bitcoin, Ethereum, Solana, etc.). Shows yield strategies like staking, lending, and liquidity provision with APY estimates. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
+      "A smart travel checklist generator that creates personalized, customizable packing lists based on your trip profile. Generates checklists for documents, clothing, toiletries, health, tech, activities, and pre-departure tasks. Call this tool immediately with NO arguments to let the user enter their trip details manually. Only provide arguments if the user has explicitly stated them.",
     "openai/componentDescriptions": {
-      "holdings-form": "Input form for crypto holdings (BTC, ETH, SOL, etc.) with dollar values or coin amounts.",
-      "yield-display": "Display showing potential annual yield earnings based on optimized strategies.",
-      "strategy-cards": "Cards showing recommended yield strategies with APY ranges, risk levels, and referral links.",
+      "trip-form": "Input form for trip details including destination, duration, travelers, climate, and purpose.",
+      "checklist-display": "Display showing categorized packing checklist items with checkboxes.",
+      "progress-tracker": "Progress bar showing how many items have been packed.",
     },
     "openai/widgetKeywords": [
-      "crypto",
-      "yield",
-      "DeFi",
-      "staking",
-      "lending",
-      "bitcoin",
-      "ethereum",
-      "solana",
-      "APY",
-      "passive income",
-      "liquidity",
-      "earn",
-      "interest"
+      "travel",
+      "checklist",
+      "packing",
+      "vacation",
+      "trip",
+      "luggage",
+      "travel planning",
+      "packing list",
+      "documents",
+      "toiletries",
+      "clothes",
+      "international",
+      "domestic"
     ],
     "openai/sampleConversations": [
-      { "user": "How can I earn yield on my crypto?", "assistant": "Here is the Crypto Yield Optimizer. Enter your crypto holdings to see how much passive income you could be earning with DeFi strategies." },
-      { "user": "I have 2 BTC and 10 ETH, what yield can I get?", "assistant": "I'll calculate the potential yield on your Bitcoin and Ethereum holdings using the best available DeFi strategies." },
-      { "user": "What's the best way to earn interest on Solana?", "assistant": "I've loaded the yield optimizer with Solana strategies. You can see staking, lending, and other options with their APY ranges." },
+      { "user": "What should I pack for my trip?", "assistant": "Here is the Smart Travel Checklist. Enter your trip details to generate a personalized packing list." },
+      { "user": "I'm going to Paris for 7 days", "assistant": "I'll create a customized packing checklist for your 7-day trip to Paris with all the essentials." },
+      { "user": "Help me pack for a beach vacation", "assistant": "I've loaded the travel checklist for a beach trip. It includes swimwear, sunscreen, and other beach essentials." },
     ],
     "openai/starterPrompts": [
-      "How can I earn yield on my crypto?",
-      "Optimize my crypto for passive income",
-      "What APY can I get on Bitcoin?",
-      "Best DeFi strategies for Ethereum",
-      "How much could I earn staking?",
-      "Find yield opportunities for my portfolio",
-      "Analyze my crypto portfolio",
+      "What should I pack for my trip?",
+      "Create a packing list for my vacation",
+      "Help me pack for an international trip",
+      "Beach vacation packing checklist",
+      "Business trip essentials",
+      "What documents do I need to travel?",
+      "Family vacation packing list",
     ],
     "openai/widgetPrefersBorder": true,
     "openai/widgetCSP": {
       connect_domains: [
-        "https://api.stlouisfed.org",
-        "https://api.coingecko.com",
-        "https://crypto-portfolio-optimizer-jn05.onrender.com"
+        "https://travel-checklist.onrender.com"
       ],
       resource_domains: [
-        "https://crypto-portfolio-optimizer-jn05.onrender.com"
+        "https://travel-checklist.onrender.com"
       ],
     },
     "openai/widgetDomain": "https://web-sandbox.oaiusercontent.com",
@@ -274,21 +261,21 @@ function widgetMeta(widget: CryptoPortfolioOptimizerWidget, bustCache: boolean =
   } as const;
 }
 
-const widgets: CryptoPortfolioOptimizerWidget[] = [
+const widgets: TravelChecklistWidget[] = [
   {
-    id: "crypto-portfolio-optimizer",
-    title: "Crypto Yield Optimizer — Simulate the best DeFi strategies to optimize passive income on a crypto portfolio",
-    templateUri: `ui://widget/crypto-portfolio-optimizer.html?v=${VERSION}`,
+    id: "travel-checklist",
+    title: "Smart Travel Checklist — Generate personalized packing lists for any trip",
+    templateUri: `ui://widget/travel-checklist.html?v=${VERSION}`,
     invoking:
-      "Opening the Crypto Yield Optimizer...",
+      "Opening the Smart Travel Checklist...",
     invoked:
-      "Here is the Crypto Yield Optimizer. Enter portfolio holdings to see how much passive income the portfolio could be earning with staking, lending, and other DeFi strategies.",
-    html: readWidgetHtml("crypto-portfolio-optimizer"),
+      "Here is the Smart Travel Checklist. Enter your trip details to generate a personalized packing list with documents, clothing, toiletries, and more.",
+    html: readWidgetHtml("travel-checklist"),
   },
 ];
 
-const widgetsById = new Map<string, CryptoPortfolioOptimizerWidget>();
-const widgetsByUri = new Map<string, CryptoPortfolioOptimizerWidget>();
+const widgetsById = new Map<string, TravelChecklistWidget>();
+const widgetsByUri = new Map<string, TravelChecklistWidget>();
 
 widgets.forEach((widget) => {
   widgetsById.set(widget.id, widget);
@@ -298,28 +285,17 @@ widgets.forEach((widget) => {
 const toolInputSchema = {
   type: "object",
   properties: {
-    // Crypto holdings (USD values)
-    btc: { type: "number", description: "Dollar value of Bitcoin holdings." },
-    eth: { type: "number", description: "Dollar value of Ethereum holdings." },
-    sol: { type: "number", description: "Dollar value of Solana holdings." },
-    ada: { type: "number", description: "Dollar value of Cardano holdings." },
-    link: { type: "number", description: "Dollar value of Chainlink holdings." },
-    avax: { type: "number", description: "Dollar value of Avalanche holdings." },
-    dot: { type: "number", description: "Dollar value of Polkadot holdings." },
-    xrp: { type: "number", description: "Dollar value of XRP holdings." },
-    bnb: { type: "number", description: "Dollar value of BNB holdings." },
-    doge: { type: "number", description: "Dollar value of Dogecoin holdings." },
-    matic: { type: "number", description: "Dollar value of Polygon (MATIC) holdings." },
-    atom: { type: "number", description: "Dollar value of Cosmos (ATOM) holdings." },
-    uni: { type: "number", description: "Dollar value of Uniswap holdings." },
-    other: { type: "number", description: "Dollar value of other crypto holdings." },
-    // Crypto holdings (coin amounts)
-    btc_amount: { type: "number", description: "Number of Bitcoin coins owned." },
-    eth_amount: { type: "number", description: "Number of Ethereum coins owned." },
-    sol_amount: { type: "number", description: "Number of Solana coins owned." },
-    // Yield settings
-    current_yield_percent: { type: "number", description: "Current APY the user is earning on their crypto (0-100)." },
-    risk_preference: { type: "string", enum: ["low", "medium", "high"], description: "Preferred risk level for yield strategies." },
+    destination: { type: "string", description: "Travel destination (city, country, or region)." },
+    trip_duration: { type: "number", description: "Trip duration in days." },
+    is_international: { type: "boolean", description: "Whether this is an international trip." },
+    climate: { type: "string", enum: ["summer", "winter", "spring", "tropical", "variable"], description: "Expected weather/climate at destination." },
+    purpose: { type: "string", enum: ["leisure", "business", "adventure", "beach", "city"], description: "Primary purpose of the trip." },
+    travelers: { type: "number", description: "Number of travelers." },
+    packing_constraint: { type: "string", enum: ["carry_on_only", "checked_bags", "minimal"], description: "Luggage type constraint." },
+    has_children: { type: "boolean", description: "Whether traveling with children." },
+    has_infants: { type: "boolean", description: "Whether traveling with infants." },
+    has_pets: { type: "boolean", description: "Whether traveling with pets." },
+    activities: { type: "array", items: { type: "string" }, description: "Planned activities (hiking, beach, camping, etc.)." },
   },
   required: [],
   additionalProperties: false,
@@ -327,56 +303,47 @@ const toolInputSchema = {
 } as const;
 
 const toolInputParser = z.object({
-  // Crypto holdings (USD values)
-  btc: z.number().optional(),
-  eth: z.number().optional(),
-  sol: z.number().optional(),
-  ada: z.number().optional(),
-  link: z.number().optional(),
-  avax: z.number().optional(),
-  dot: z.number().optional(),
-  xrp: z.number().optional(),
-  bnb: z.number().optional(),
-  doge: z.number().optional(),
-  matic: z.number().optional(),
-  atom: z.number().optional(),
-  uni: z.number().optional(),
-  other: z.number().optional(),
-  // Crypto holdings (coin amounts)
-  btc_amount: z.number().optional(),
-  eth_amount: z.number().optional(),
-  sol_amount: z.number().optional(),
-  // Yield settings
-  current_yield_percent: z.number().optional(),
-  risk_preference: z.enum(["low", "medium", "high"]).optional(),
+  destination: z.string().optional(),
+  trip_duration: z.number().optional(),
+  is_international: z.boolean().optional(),
+  climate: z.enum(["summer", "winter", "spring", "tropical", "variable"]).optional(),
+  purpose: z.enum(["leisure", "business", "adventure", "beach", "city"]).optional(),
+  travelers: z.number().optional(),
+  packing_constraint: z.enum(["carry_on_only", "checked_bags", "minimal"]).optional(),
+  has_children: z.boolean().optional(),
+  has_infants: z.boolean().optional(),
+  has_pets: z.boolean().optional(),
+  activities: z.array(z.string()).optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this to simulate crypto yield optimization. Helps users simulate the best DeFi strategies to earn passive income on crypto portfolios. Call this tool immediately with NO arguments to let the user enter their data manually. Only provide arguments if the user has explicitly stated them.",
+    "Use this to generate a personalized travel packing checklist. Helps users create customized packing lists based on their trip details. Call this tool immediately with NO arguments to let the user enter their trip details manually. Only provide arguments if the user has explicitly stated them.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
     properties: {
       ready: { type: "boolean" },
       timestamp: { type: "string" },
-      btc: { type: "number" },
-      eth: { type: "number" },
-      sol: { type: "number" },
-      current_yield_percent: { type: "number" },
-      risk_preference: { type: "string", enum: ["low", "medium", "high"] },
+      destination: { type: "string" },
+      trip_duration: { type: "number" },
+      is_international: { type: "boolean" },
+      climate: { type: "string" },
+      purpose: { type: "string" },
+      travelers: { type: "number" },
       input_source: { type: "string", enum: ["user", "default"] },
       summary: {
         type: "object",
         properties: {
-          total_portfolio: { type: ["number", "null"] },
-          current_yield_percent: { type: ["number", "null"] },
-          optimized_apy: { type: ["number", "null"] },
-          current_annual_yield: { type: ["number", "null"] },
-          potential_annual_yield: { type: ["number", "null"] },
-          additional_yield: { type: ["number", "null"] },
-          yield_status: { type: ["string", "null"] },
+          destination: { type: ["string", "null"] },
+          trip_duration: { type: ["number", "null"] },
+          is_international: { type: ["boolean", "null"] },
+          climate: { type: ["string", "null"] },
+          purpose: { type: ["string", "null"] },
+          travelers: { type: ["number", "null"] },
+          estimated_items: { type: ["number", "null"] },
+          trip_type: { type: ["string", "null"] },
         },
       },
       suggested_followups: {
@@ -404,7 +371,7 @@ const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
   name: widget.title,
   description:
-    "HTML template for the Crypto Yield Optimizer widget that helps find simulate Decentralized Finance (DeFi) strategies and optimize yield on crypto portfolios.",
+    "HTML template for the Travel Checklist widget that generates personalized packing lists based on trip details.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
@@ -413,18 +380,18 @@ const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
   uriTemplate: widget.templateUri,
   name: widget.title,
   description:
-    "Template descriptor for the Crypto Yield Optimizer widget.",
+    "Template descriptor for the Travel Checklist widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
 
-function createCryptoYieldOptimizerServer(): Server {
+function createTravelChecklistServer(): Server {
   const server = new Server(
     {
-      name: "crypto-yield-optimizer",
+      name: "travel-checklist",
       version: "0.1.0",
       description:
-        "Crypto Yield Optimizer helps users simulate the best DeFi strategies to discover passive income on a crypto (Bitcoin, Ethereum, Solana, etc.) portfolio.",
+        "Smart Travel Checklist helps users generate personalized packing lists based on their trip profile including destination, duration, climate, and activities.",
     },
     {
       capabilities: {
@@ -526,7 +493,7 @@ function createCryptoYieldOptimizerServer(): Server {
         // Debug log
         console.log("Captured meta:", { userLocation, userLocale, userAgent });
 
-        // If ChatGPT didn't pass structured arguments, try to infer key numbers from freeform text in meta
+        // If ChatGPT didn't pass structured arguments, try to infer travel details from freeform text in meta
         try {
           const candidates: any[] = [
             meta["openai/subject"],
@@ -538,72 +505,49 @@ function createCryptoYieldOptimizerServer(): Server {
           ];
           const userText = candidates.find((t) => typeof t === "string" && t.trim().length > 0) || "";
 
-          const parseAmountToNumber = (s: string): number | null => {
-            const lower = s.toLowerCase().replace(/[,$\s]/g, "").trim();
-            const k = lower.match(/(\d+(?:\.\d+)?)(k)$/);
-            if (k) return Math.round(parseFloat(k[1]) * 1_000);
-            const n = Number(lower.replace(/[^0-9.]/g, ""));
-            return Number.isFinite(n) ? Math.round(n) : null;
-          };
-
-          // Infer crypto holdings from user text
-          
-          // Crypto holdings patterns (e.g., "$10k in bitcoin", "2 BTC", "$50,000 worth of ETH")
-          const cryptoPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
-            { key: "btc", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:bitcoin|btc)/i },
-            { key: "eth", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:ethereum|eth|ether)/i },
-            { key: "sol", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:solana|sol)/i },
-            { key: "ada", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:cardano|ada)/i },
-            { key: "link", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:chainlink|link)/i },
-            { key: "avax", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:avalanche|avax)/i },
-            { key: "dot", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:polkadot|dot)/i },
-            { key: "matic", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:polygon|matic)/i },
-            { key: "atom", regex: /\$\s*(\d+(?:,\d{3})*(?:\.\d+)?)(k|m)?\s*(?:in\s+|worth\s+of\s+|of\s+)?(?:cosmos|atom)/i },
-          ];
-          
-          for (const { key, regex } of cryptoPatterns) {
-            if ((args as any)[key] === undefined) {
-              const match = userText.match(regex);
-              if (match) {
-                let amount = parseFloat(match[1].replace(/,/g, ''));
-                if (match[2]?.toLowerCase() === 'k') amount *= 1000;
-                if (match[2]?.toLowerCase() === 'm') amount *= 1000000;
-                if (amount > 0) (args as any)[key] = amount;
-              }
+          // Try to infer destination from user text (e.g., "trip to Paris", "vacation in Hawaii")
+          if (args.destination === undefined) {
+            const destMatch = userText.match(/(?:trip|travel|going|vacation|visit|flying)\s+(?:to|in)\s+([A-Za-z\s,]+?)(?:\.|,|for|\s+\d|\s*$)/i);
+            if (destMatch) {
+              args.destination = destMatch[1].trim();
             }
           }
           
-          // Coin amount patterns (e.g., "2 BTC", "10 ETH", "100 SOL")
-          const coinAmountPatterns: Array<{ key: keyof typeof args; regex: RegExp }> = [
-            { key: "btc_amount", regex: /(\d+(?:\.\d+)?)\s*(?:bitcoin|btc)\b/i },
-            { key: "eth_amount", regex: /(\d+(?:\.\d+)?)\s*(?:ethereum|eth|ether)\b/i },
-            { key: "sol_amount", regex: /(\d+(?:\.\d+)?)\s*(?:solana|sol)\b/i },
-          ];
-          
-          for (const { key, regex } of coinAmountPatterns) {
-            if ((args as any)[key] === undefined) {
-              const match = userText.match(regex);
-              if (match) {
-                const amount = parseFloat(match[1]);
-                if (amount > 0) (args as any)[key] = amount;
-              }
+          // Try to infer trip duration (e.g., "7 days", "2 weeks", "a week")
+          if (args.trip_duration === undefined) {
+            const durationMatch = userText.match(/(\d+)\s*(?:day|night)s?/i);
+            if (durationMatch) {
+              args.trip_duration = parseInt(durationMatch[1]);
+            } else if (/a\s+week|one\s+week/i.test(userText)) {
+              args.trip_duration = 7;
+            } else if (/two\s+weeks?|2\s+weeks?/i.test(userText)) {
+              args.trip_duration = 14;
             }
           }
           
-          // Current yield percent (e.g., "earning 3%", "getting 5% APY")
-          if (args.current_yield_percent === undefined) {
-             const yieldMatch = userText.match(/(?:earning|getting|making|receiving)\s*(\d+(?:\.\d+)?)\s*%/i);
-             if (yieldMatch) {
-               const percent = parseFloat(yieldMatch[1]);
-               if (percent >= 0 && percent <= 100) args.current_yield_percent = percent;
-             }
+          // Infer international vs domestic
+          if (args.is_international === undefined) {
+            if (/international|abroad|overseas|passport/i.test(userText)) {
+              args.is_international = true;
+            } else if (/domestic|within|local/i.test(userText)) {
+              args.is_international = false;
+            }
           }
           
-          // Risk preference from keywords
-          if (args.risk_preference === undefined) {
-             if (/low risk|safe|cautious|conservative|staking only/i.test(userText)) args.risk_preference = "low";
-             else if (/high risk|aggressive|yield farming|maximum yield/i.test(userText)) args.risk_preference = "high";
-             else if (/medium|moderate|balanced/i.test(userText)) args.risk_preference = "medium";
+          // Infer climate from keywords
+          if (args.climate === undefined) {
+            if (/beach|tropical|caribbean|hawaii|mexico|thailand|bali/i.test(userText)) args.climate = "tropical";
+            else if (/winter|cold|snow|ski|skiing|christmas|december|january|february/i.test(userText)) args.climate = "winter";
+            else if (/summer|hot|warm|july|august|june/i.test(userText)) args.climate = "summer";
+            else if (/spring|fall|autumn|mild/i.test(userText)) args.climate = "spring";
+          }
+          
+          // Infer purpose from keywords
+          if (args.purpose === undefined) {
+            if (/business|work|conference|meeting/i.test(userText)) args.purpose = "business";
+            else if (/beach|swim|ocean|resort/i.test(userText)) args.purpose = "beach";
+            else if (/hike|hiking|adventure|camping|outdoor/i.test(userText)) args.purpose = "adventure";
+            else if (/city|urban|sightseeing|museum/i.test(userText)) args.purpose = "city";
           }
 
         } catch (e) {
@@ -618,16 +562,15 @@ function createCryptoYieldOptimizerServer(): Server {
 
         // Infer likely user query from parameters
         const inferredQuery = [] as string[];
-        if (args.btc) inferredQuery.push(`BTC: $${args.btc.toLocaleString()}`);
-        if (args.eth) inferredQuery.push(`ETH: $${args.eth.toLocaleString()}`);
-        if (args.sol) inferredQuery.push(`SOL: $${args.sol.toLocaleString()}`);
-        if (args.current_yield_percent) inferredQuery.push(`current APY: ${args.current_yield_percent}%`);
-        if (args.risk_preference) inferredQuery.push(`risk: ${args.risk_preference}`);
+        if (args.destination) inferredQuery.push(`Destination: ${args.destination}`);
+        if (args.trip_duration) inferredQuery.push(`Duration: ${args.trip_duration} days`);
+        if (args.purpose) inferredQuery.push(`Purpose: ${args.purpose}`);
+        if (args.climate) inferredQuery.push(`Climate: ${args.climate}`);
 
         logAnalytics("tool_call_success", {
           toolName: request.params.name,
           params: args,
-          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Crypto Yield Optimizer",
+          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Travel Checklist",
           responseTime,
 
           device: deviceCategory,
@@ -648,7 +591,7 @@ function createCryptoYieldOptimizerServer(): Server {
         console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
 
         // Build structured content once so we can log it and return it.
-        // For the yield optimizer, expose fields relevant to crypto holdings and yield
+        // For the travel checklist, expose fields relevant to trip details
         const structured = {
           ready: true,
           timestamp: new Date().toISOString(),
@@ -657,10 +600,10 @@ function createCryptoYieldOptimizerServer(): Server {
           // Summary + follow-ups for natural language UX
           summary: computeSummary(args),
           suggested_followups: [
-            "What's the safest way to earn yield?",
-            "How can I maximize my APY?",
-            "What strategies work for Bitcoin?",
-            "Is staking or lending better for ETH?"
+            "What documents do I need?",
+            "What clothes should I pack?",
+            "Do I need any vaccines?",
+            "What about toiletries for carry-on?"
           ],
         } as const;
 
@@ -683,14 +626,14 @@ function createCryptoYieldOptimizerServer(): Server {
 
         // Log success analytics
         try {
-          // Check for "empty" result - when no main crypto inputs are provided
-          const hasMainInputs = args.btc || args.eth || args.sol || args.btc_amount || args.eth_amount;
+          // Check for "empty" result - when no main travel inputs are provided
+          const hasMainInputs = args.destination || args.trip_duration || args.purpose;
           
           if (!hasMainInputs) {
              logAnalytics("tool_call_empty", {
                toolName: request.params.name,
                params: request.params.arguments || {},
-               reason: "No crypto holdings provided"
+               reason: "No trip details provided"
              });
           } else {
           logAnalytics("tool_call_success", {
@@ -1002,7 +945,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Crypto Yield Optimizer Analytics</title>
+  <title>Travel Checklist Analytics</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; padding: 20px; }
@@ -1029,7 +972,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 </head>
 <body>
   <div class="container">
-    <h1>📊 Crypto Yield Optimizer Analytics</h1>
+    <h1>📊 Travel Checklist Analytics</h1>
     <p class="subtitle">Last 7 days • Auto-refresh every 60s</p>
     
     <div class="grid">
@@ -1354,7 +1297,7 @@ async function subscribeToButtondown(email: string, topicId: string, topicName: 
 
   const metadata: Record<string, any> = {
     topicName,
-    source: "crypto-portfolio-optimizer",
+    source: "travel-checklist",
     subscribedAt: new Date().toISOString(),
   };
 
@@ -1444,7 +1387,7 @@ async function updateButtondownSubscriber(email: string, topicId: string, topicN
   const updatedMetadata = {
     ...existingMetadata,
     [topicKey]: topicData,
-    source: "crypto-portfolio-optimizer",
+    source: "travel-checklist",
   };
 
   const updateRequestBody = {
@@ -1499,8 +1442,8 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
     // Support both old (settlementId/settlementName) and new (topicId/topicName) field names
     const parsed = JSON.parse(body);
     const email = parsed.email;
-    const topicId = parsed.topicId || parsed.settlementId || "crypto-portfolio-optimizer";
-    const topicName = parsed.topicName || parsed.settlementName || "Crypto Yield Optimizer Updates";
+    const topicId = parsed.topicId || parsed.settlementId || "travel-checklist";
+    const topicName = parsed.topicName || parsed.settlementName || "Travel Checklist Updates";
     if (!email || !email.includes("@")) {
       res.writeHead(400).end(JSON.stringify({ error: "Invalid email address" }));
       return;
@@ -1574,7 +1517,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
 async function handleSseRequest(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const server = createCryptoYieldOptimizerServer();
+  const server = createTravelChecklistServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 
@@ -1687,8 +1630,8 @@ const httpServer = createServer(
     }
 
     // Serve alias for legacy loader path -> our main widget HTML
-    if (req.method === "GET" && (url.pathname === "/assets/portfolio-optimizer.html" || url.pathname === "/assets/crypto-portfolio-optimizer.html")) {
-      const mainAssetPath = path.join(ASSETS_DIR, "crypto-portfolio-optimizer.html");
+    if (req.method === "GET" && (url.pathname === "/assets/travel-checklist.html" || url.pathname === "/assets/crypto-portfolio-optimizer.html")) {
+      const mainAssetPath = path.join(ASSETS_DIR, "travel-checklist.html");
       console.log(`[Debug Legacy] Request: ${url.pathname}, Main Path: ${mainAssetPath}, Exists: ${fs.existsSync(mainAssetPath)}`);
       if (fs.existsSync(mainAssetPath) && fs.statSync(mainAssetPath).isFile()) {
         res.writeHead(200, {
@@ -1760,7 +1703,7 @@ function startMonitoring() {
 
 httpServer.listen(port, () => {
   startMonitoring();
-  console.log(`Crypto Yield Optimizer MCP server listening on http://localhost:${port}`);
+  console.log(`Travel Checklist MCP server listening on http://localhost:${port}`);
   console.log(`  SSE stream: GET http://localhost:${port}${ssePath}`);
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`

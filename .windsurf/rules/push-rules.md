@@ -2,6 +2,6 @@
 trigger: always_on
 ---
 
-always push updates to https://github.com/jht243/crypto-portfolio-optimizer
+always push updates to https://github.com/jht243/travel-checklist
 
 always give me the hash for each new committy

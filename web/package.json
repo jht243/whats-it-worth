@@ -1,9 +1,9 @@
 {
-  "name": "crypto-portfolio-optimizer-web",
+  "name": "travel-checklist-web",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "esbuild src/main.tsx --bundle --format=esm --outfile=../assets/crypto-portfolio-optimizer.js"
+    "build": "esbuild src/main.tsx --bundle --format=esm --outfile=../assets/travel-checklist.js"
   },
   "dependencies": {
     "lucide-react": "^0.554.0",

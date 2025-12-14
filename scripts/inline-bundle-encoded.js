@@ -11,8 +11,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const htmlPath = path.join(__dirname, '../assets/crypto-portfolio-optimizer.html');
-const jsPath = path.join(__dirname, '../assets/crypto-portfolio-optimizer.js');
+const htmlPath = path.join(__dirname, '../assets/travel-checklist.html');
+const jsPath = path.join(__dirname, '../assets/travel-checklist.js');
 
 console.log('[Inline Bundle] Reading files...');
 const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
@@ -34,10 +34,10 @@ const inlineScript = `
       const url = URL.createObjectURL(blob);
       import(url)
         .catch(err => {
-          console.error('[Crypto Portfolio Optimizer] Failed to load:', err);
-          const root = document.getElementById('crypto-portfolio-optimizer-root');
+          console.error('[Travel Checklist] Failed to load:', err);
+          const root = document.getElementById('travel-checklist-root');
           if (root) {
-            root.innerHTML = '<div style="padding:20px;text-align:center;font-family:sans-serif;color:#DC2626"><h3>Failed to load calculator</h3><p>Please refresh the page.</p></div>';
+            root.innerHTML = '<div style="padding:20px;text-align:center;font-family:sans-serif;color:#DC2626"><h3>Failed to load checklist</h3><p>Please refresh the page.</p></div>';
           }
         });
     </script>`;

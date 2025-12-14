@@ -1,14 +1,14 @@
 {
-  "name": "crypto-portfolio-optimizer-mcp-node",
+  "name": "travel-checklist-mcp-node",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "Crypto Portfolio Optimizer — optimize portfolio allocation. Investment and portfolio analysis.",
+  "description": "Smart Travel Checklist — generate personalized, customizable packing lists based on your trip profile.",
   "keywords": [
-    "crypto portfolio optimizer",
-    "financial calculator",
-    "portfolio",
-    "finance"
+    "travel checklist",
+    "packing list",
+    "travel planner",
+    "vacation"
   ],
   "scripts": {
     "start": "tsx src/server.ts",

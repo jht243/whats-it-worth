@@ -1,15 +1,29 @@
-# Crypto Yield Optimizer - ChatGPT MCP Connector
+# Smart Travel Checklist - ChatGPT MCP Connector
 
-A Model Context Protocol (MCP) server that provides an interactive crypto yield optimization widget for ChatGPT. Helps users discover the best DeFi strategies to earn passive income on their crypto holdings.
+A Model Context Protocol (MCP) server that provides an interactive travel checklist widget for ChatGPT. Helps users generate personalized, customizable packing lists based on their trip profile.
 
 **[Privacy Policy](PRIVACY.md)** | **[OpenAI Apps SDK](https://developers.openai.com/apps-sdk)**
 
 ## Features
 
-- 💰 Find optimal yield strategies for your crypto (staking, lending, liquidity provision)
-- 📊 Simple inputs: Enter your crypto holdings (BTC, ETH, SOL, etc.) and current yield
-- 🔄 Interactive widget that appears directly in ChatGPT
-- 📈 Shows potential earnings and recommended DeFi platforms
+- ✈️ Generate personalized packing checklists based on trip details
+- 📋 Smart rules engine for documents, clothing, toiletries, health, tech, and more
+- 🌍 International vs domestic trip support with appropriate items
+- 👨‍👩‍👧‍👦 Family-specific items for children, infants, seniors, and pets
+- 🎿 Activity-specific gear recommendations (hiking, beach, camping, etc.)
+- ✅ Interactive checklist with progress tracking
+- 🖨️ Print-friendly output
+
+## Checklist Categories
+
+1. **Mandatory Documents** - ID, passport, visa, insurance, itinerary
+2. **Clothing & Accessories** - Climate-appropriate items with quantities
+3. **Toiletries** - TSA-compliant options for carry-on travelers
+4. **Health & Safety** - First aid, medications, sanitizer
+5. **Tech & Gadgets** - Phone, chargers, adapters
+6. **Activity-Specific Gear** - Based on planned activities
+7. **Family-Specific Items** - For children, infants, seniors, pets
+8. **Pre-Departure Tasks** - Confirmations, bank notifications, home prep
 
 ## Quick Start
 
@@ -24,13 +38,19 @@ A Model Context Protocol (MCP) server that provides an interactive crypto yield 
 pnpm install
 ```
 
+### Build the Widget
+
+```bash
+pnpm run build
+```
+
 ### Run Locally
 
 ```bash
 pnpm start
 ```
 
-Server runs on `http://localhost:8000`. **Note:** HTTP endpoints are for local development only. The SDK requires HTTPS for all production connections.
+Server runs on `http://localhost:8000`. **Note:** HTTP endpoints are for local development only.
 
 ### Deploy to Render.com
 
@@ -39,20 +59,20 @@ Server runs on `http://localhost:8000`. **Note:** HTTP endpoints are for local d
 3. Create new Web Service from this repo
 4. Render will auto-detect `render.yaml` and deploy
 
-Your permanent URL: `https://crypto-portfolio-optimizer-jn05.onrender.com/mcp`
-
-### Transport Security
-
-- **Production:** Always access the MCP endpoints via `https://…` (Render automatically provisions TLS). Never expose the widget or APIs over plain HTTP in production.
-- **Local development:** The only allowed HTTP endpoint is `http://localhost:8000` while running `npm start`. Do not publish that URL or tunnel it publicly.
-- **External monitors/webhooks:** When configuring Pingdom, Datadog, etc., use the HTTPS endpoint (`https://crypto-portfolio-optimizer-jn05.onrender.com/analytics`, `…/mcp`, etc.) to keep telemetry encrypted end-to-end.
-
 ## How to Use in ChatGPT
 
 1. Open ChatGPT in **Developer Mode**
-2. Add MCP Connector with URL: `https://crypto-portfolio-optimizer-jn05.onrender.com/mcp`
-3. Say: **"find yield for my crypto"** or **"optimize my crypto portfolio"**
+2. Add MCP Connector with your deployed URL
+3. Say: **"What should I pack for my trip?"** or **"Create a packing list for Paris"**
 4. The interactive widget appears!
+
+### Example Prompts
+
+- "I'm going to Paris for 7 days"
+- "Help me pack for a beach vacation in Hawaii"
+- "Business trip packing list for London"
+- "Family vacation checklist with 2 kids"
+- "What documents do I need for international travel?"
 
 ## Tech Stack
 
@@ -60,6 +80,7 @@ Your permanent URL: `https://crypto-portfolio-optimizer-jn05.onrender.com/mcp`
 - **Node.js + TypeScript** - Server runtime
 - **Server-Sent Events (SSE)** - Real-time communication
 - **React** - Widget UI components
+- **Lucide Icons** - Beautiful icons
 
 ## Environment Variables
 
@@ -67,26 +88,20 @@ Copy `.env.example` to `.env` and configure:
 
 ```bash
 BUTTONDOWN_API_KEY=your_api_key
-FRED_API_KEY=optional_fred_api_key
-FRED_SERIES_ID=MORTGAGE30US
 ANALYTICS_PASSWORD=your_password
 ```
 
 ## Privacy & Data Use
 
-- **What we collect:** When the widget runs inside ChatGPT we receive the location (city/region/country), locale, device/browser fingerprint, and an inferred portfolio query via `_meta` so we can prefill the calculator and measure usage.
-- **How we use it:** These fields feed the `/analytics` dashboard and error alerts only; we do not sell or share this data with third parties.
-- **Retention:** Logs are stored for **30 days** in the `/logs` folder on the server and then automatically rotated.
-- **User input storage:** The widget caches your in-progress form values in `localStorage` so they persist across refreshes; entries automatically expire after **30 days**. Clear them anytime with the "Reset" button in the widget.
-- **Deletion / questions:** Email **support@crypto-portfolio-optimizer-jn05.onrender.com** (or open a GitHub issue) with the timestamp (UTC) of your ChatGPT session and we will delete the associated log entry within 7 days.
+- **What we collect:** When the widget runs inside ChatGPT we receive the location (city/region/country), locale, device/browser fingerprint, and trip query details via `_meta`.
+- **How we use it:** These fields feed the `/analytics` dashboard only; we do not sell or share this data.
+- **Retention:** Logs are stored for **30 days** in the `/logs` folder and then automatically rotated.
+- **User input storage:** The widget caches your checklist progress in `localStorage`; entries expire after **30 days**. Clear anytime with the "Reset" button.
 
 ## Monitoring & Alerts
 
-- Visit `/analytics` (Basic Auth protected) to review the live dashboard plus an “Alerts” panel.
-- Thresholds implemented:
-  - **Tool failures:** More than 5 `tool_call_error` events in the last 24h raises a critical alert.
-  - **Buttondown failures:** If more than 10% of subscription attempts in the last 7 days fail, a warning is raised.
-- Recommended: schedule an external ping (e.g., Cron + curl) that hits `/analytics` hourly and sends notifications if the HTML contains active alerts.
+- Visit `/analytics` (Basic Auth protected) to review the live dashboard.
+- Alerts for tool failures and subscription issues are logged automatically.
 
 ## License
 
