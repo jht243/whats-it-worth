@@ -1392,22 +1392,135 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
         updates.destination = String(initialData.destination);
       }
       
-      // Dates
-      if (initialData.start_date) {
-        updates.startDate = String(initialData.start_date);
-      }
-      if (initialData.end_date) {
-        updates.endDate = String(initialData.end_date);
+      // Calculate trip duration in days
+      let tripDurationDays = 7; // Default to 1 week
+      if (initialData.trip_duration) {
+        tripDurationDays = Number(initialData.trip_duration);
+      } else if (initialData.trip_weeks) {
+        tripDurationDays = Number(initialData.trip_weeks) * 7;
       }
       
-      // Trip duration (calculate from dates if not provided)
-      if (initialData.trip_duration) {
-        updates.tripDuration = Number(initialData.trip_duration);
-      } else if (initialData.start_date && initialData.end_date) {
-        const start = new Date(initialData.start_date);
-        const end = new Date(initialData.end_date);
-        const diff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+      // Helper to format date as YYYY-MM-DD
+      const formatDate = (d: Date): string => {
+        return d.toISOString().split('T')[0];
+      };
+      
+      // Helper to get next occurrence of a day of week (0=Sunday, 6=Saturday)
+      const getNextDayOfWeek = (dayOfWeek: number, weeksAhead: number = 0): Date => {
+        const today = new Date();
+        const currentDay = today.getDay();
+        let daysUntil = dayOfWeek - currentDay;
+        if (daysUntil <= 0) daysUntil += 7;
+        const result = new Date(today);
+        result.setDate(today.getDate() + daysUntil + (weeksAhead * 7));
+        return result;
+      };
+      
+      // Helper to get first day of a month
+      const getFirstOfMonth = (monthName: string): Date => {
+        const months: Record<string, number> = {
+          january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+          july: 6, august: 7, september: 8, october: 9, november: 10, december: 11
+        };
+        const monthNum = months[monthName.toLowerCase()];
+        if (monthNum === undefined) return new Date();
+        
+        const today = new Date();
+        let year = today.getFullYear();
+        // If the month has already passed this year, use next year
+        if (monthNum < today.getMonth() || (monthNum === today.getMonth() && today.getDate() > 1)) {
+          year++;
+        }
+        return new Date(year, monthNum, 1);
+      };
+      
+      // Dates - handle exact dates, relative timing, or month-based
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
+      
+      // Priority 1: Exact dates provided
+      if (initialData.start_date) {
+        startDate = new Date(initialData.start_date);
+        if (initialData.end_date) {
+          endDate = new Date(initialData.end_date);
+        }
+      }
+      
+      // Priority 2: Relative departure timing (e.g., "in two weeks", "next weekend")
+      if (!startDate && initialData.departure_timing) {
+        const today = new Date();
+        const timing = initialData.departure_timing;
+        
+        switch (timing) {
+          case "this_week":
+            // Start tomorrow
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 1);
+            break;
+          case "next_week":
+            // Start 7 days from now
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 7);
+            break;
+          case "in_two_weeks":
+            // Start 14 days from now (user said "in two weeks" so give them a week to prepare)
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 7);
+            break;
+          case "in_three_weeks":
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 14);
+            break;
+          case "this_weekend":
+            // Next Saturday
+            startDate = getNextDayOfWeek(6, 0);
+            if (!initialData.trip_duration && !initialData.trip_weeks) {
+              tripDurationDays = 2; // Weekend = 2 days
+            }
+            break;
+          case "next_weekend":
+            // Saturday after next
+            startDate = getNextDayOfWeek(6, 1);
+            if (!initialData.trip_duration && !initialData.trip_weeks) {
+              tripDurationDays = 2;
+            }
+            break;
+          case "next_month":
+            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+            startDate = nextMonth;
+            break;
+          case "in_two_months":
+            const twoMonths = new Date(today.getFullYear(), today.getMonth() + 2, 1);
+            startDate = twoMonths;
+            break;
+        }
+      }
+      
+      // Priority 3: Month-based (e.g., "in December", "in January")
+      if (!startDate && initialData.trip_month) {
+        startDate = getFirstOfMonth(initialData.trip_month);
+      }
+      
+      // Calculate end date if we have a start date but no end date
+      if (startDate && !endDate) {
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + tripDurationDays - 1);
+      }
+      
+      // Apply dates to updates
+      if (startDate && !isNaN(startDate.getTime())) {
+        updates.startDate = formatDate(startDate);
+      }
+      if (endDate && !isNaN(endDate.getTime())) {
+        updates.endDate = formatDate(endDate);
+      }
+      
+      // Set trip duration
+      if (startDate && endDate) {
+        const diff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
         if (diff > 0) updates.tripDuration = diff;
+      } else if (tripDurationDays > 0) {
+        updates.tripDuration = tripDurationDays;
       }
       
       // International flag

@@ -26077,19 +26077,116 @@ function TravelChecklist({ initialData: initialData2 }) {
       if (initialData2.destination) {
         updates.destination = String(initialData2.destination);
       }
-      if (initialData2.start_date) {
-        updates.startDate = String(initialData2.start_date);
-      }
-      if (initialData2.end_date) {
-        updates.endDate = String(initialData2.end_date);
-      }
+      let tripDurationDays = 7;
       if (initialData2.trip_duration) {
-        updates.tripDuration = Number(initialData2.trip_duration);
-      } else if (initialData2.start_date && initialData2.end_date) {
-        const start = new Date(initialData2.start_date);
-        const end = new Date(initialData2.end_date);
-        const diff = Math.ceil((end.getTime() - start.getTime()) / (1e3 * 60 * 60 * 24)) + 1;
+        tripDurationDays = Number(initialData2.trip_duration);
+      } else if (initialData2.trip_weeks) {
+        tripDurationDays = Number(initialData2.trip_weeks) * 7;
+      }
+      const formatDate = (d) => {
+        return d.toISOString().split("T")[0];
+      };
+      const getNextDayOfWeek = (dayOfWeek, weeksAhead = 0) => {
+        const today = /* @__PURE__ */ new Date();
+        const currentDay = today.getDay();
+        let daysUntil = dayOfWeek - currentDay;
+        if (daysUntil <= 0) daysUntil += 7;
+        const result = new Date(today);
+        result.setDate(today.getDate() + daysUntil + weeksAhead * 7);
+        return result;
+      };
+      const getFirstOfMonth = (monthName) => {
+        const months = {
+          january: 0,
+          february: 1,
+          march: 2,
+          april: 3,
+          may: 4,
+          june: 5,
+          july: 6,
+          august: 7,
+          september: 8,
+          october: 9,
+          november: 10,
+          december: 11
+        };
+        const monthNum = months[monthName.toLowerCase()];
+        if (monthNum === void 0) return /* @__PURE__ */ new Date();
+        const today = /* @__PURE__ */ new Date();
+        let year = today.getFullYear();
+        if (monthNum < today.getMonth() || monthNum === today.getMonth() && today.getDate() > 1) {
+          year++;
+        }
+        return new Date(year, monthNum, 1);
+      };
+      let startDate = null;
+      let endDate = null;
+      if (initialData2.start_date) {
+        startDate = new Date(initialData2.start_date);
+        if (initialData2.end_date) {
+          endDate = new Date(initialData2.end_date);
+        }
+      }
+      if (!startDate && initialData2.departure_timing) {
+        const today = /* @__PURE__ */ new Date();
+        const timing = initialData2.departure_timing;
+        switch (timing) {
+          case "this_week":
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 1);
+            break;
+          case "next_week":
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 7);
+            break;
+          case "in_two_weeks":
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 7);
+            break;
+          case "in_three_weeks":
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() + 14);
+            break;
+          case "this_weekend":
+            startDate = getNextDayOfWeek(6, 0);
+            if (!initialData2.trip_duration && !initialData2.trip_weeks) {
+              tripDurationDays = 2;
+            }
+            break;
+          case "next_weekend":
+            startDate = getNextDayOfWeek(6, 1);
+            if (!initialData2.trip_duration && !initialData2.trip_weeks) {
+              tripDurationDays = 2;
+            }
+            break;
+          case "next_month":
+            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+            startDate = nextMonth;
+            break;
+          case "in_two_months":
+            const twoMonths = new Date(today.getFullYear(), today.getMonth() + 2, 1);
+            startDate = twoMonths;
+            break;
+        }
+      }
+      if (!startDate && initialData2.trip_month) {
+        startDate = getFirstOfMonth(initialData2.trip_month);
+      }
+      if (startDate && !endDate) {
+        endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + tripDurationDays - 1);
+      }
+      if (startDate && !isNaN(startDate.getTime())) {
+        updates.startDate = formatDate(startDate);
+      }
+      if (endDate && !isNaN(endDate.getTime())) {
+        updates.endDate = formatDate(endDate);
+      }
+      if (startDate && endDate) {
+        const diff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1e3 * 60 * 60 * 24)) + 1;
         if (diff > 0) updates.tripDuration = diff;
+      } else if (tripDurationDays > 0) {
+        updates.tripDuration = tripDurationDays;
       }
       if (typeof initialData2.is_international === "boolean") {
         updates.isInternational = initialData2.is_international;
