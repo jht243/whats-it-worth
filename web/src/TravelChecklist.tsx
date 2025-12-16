@@ -278,7 +278,7 @@ const TRAVELER_PRESETS: Record<string, { label: string; icon: string; items: { n
       { name: "Workout shirts", category: "workout", quantity: "6" },
       { name: "Workout shorts", category: "workout", quantity: "4" },
       { name: "Training shoes", category: "workout" },
-      { name: "Workout socks", category: "workout", quantity: "6 pairs" },
+      { name: "Workout socks", category: "workout", quantity: "6" },
       { name: "Sports bra", category: "workout", quantity: "5", gender: "female" },
       { name: "Compression shorts", category: "workout", quantity: "3" },
       { name: "Resistance bands", category: "activity" },
@@ -516,7 +516,7 @@ const parsePersonalNotes = (notes: string): ChecklistItem[] => {
     items.push({ id: "note-gym-shorts", name: "Workout shorts", category: "workout", quantity: "3", essential: false, checked: false });
     items.push({ id: "note-sports-bra", name: "Sports bra", category: "workout", quantity: "3", essential: false, checked: false, gender: "female" });
     items.push({ id: "note-gym-shoes", name: "Training shoes", category: "workout", essential: false, checked: false });
-    items.push({ id: "note-gym-socks", name: "Workout socks", category: "workout", quantity: "3 pairs", essential: false, checked: false });
+    items.push({ id: "note-gym-socks", name: "Workout socks", category: "workout", quantity: "3", essential: false, checked: false });
     items.push({ id: "note-gym-gloves", name: "Workout gloves", category: "activity", essential: false, checked: false });
     items.push({ id: "note-gym-towel", name: "Gym towel", category: "personal", essential: false, checked: false });
     items.push({ id: "note-gym-bottle", name: "Water bottle", category: "personal", essential: false, checked: false });
@@ -1132,7 +1132,8 @@ const DestinationAutocomplete = ({ value, onChange, style }: { value: string; on
         type="text"
         value={value}
         onChange={(e) => { onChange(e.target.value); setHighlightedIndex(-1); setUserHasFocused(true); }}
-        onFocus={() => { setUserHasFocused(true); if (suggestions.length > 0) setIsOpen(true); }}
+        onFocus={() => { setUserHasFocused(true); }}
+        onBlur={() => { setTimeout(() => { setUserHasFocused(false); setIsOpen(false); }, 150); }}
         onKeyDown={handleKeyDown}
         placeholder="Start typing any city..."
         autoComplete="off"
@@ -1327,6 +1328,17 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
   const [saveChecklistName, setSaveChecklistName] = useState("");
   const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
   const [showSavedList, setShowSavedList] = useState(false);
+  
+  // Subscribe state
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+  const [email, setEmail] = useState("");
+  const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [subscribeMessage, setSubscribeMessage] = useState("");
+  
+  // Feedback state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   
   // Weather state
   const [weatherForecast, setWeatherForecast] = useState<WeatherForecast | null>(null);
@@ -1935,6 +1947,76 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
     setSelectedTab("shared"); 
   };
 
+  // Subscribe handler
+  const handleSubscribe = async () => {
+    if (!email || !email.includes("@")) {
+      setSubscribeMessage("Please enter a valid email.");
+      setSubscribeStatus("error");
+      return;
+    }
+    setSubscribeStatus("loading");
+    try {
+      const serverUrl = window.location.hostname === "localhost" ? "" : "https://travel-checklist-q79n.onrender.com";
+      const response = await fetch(`${serverUrl}/api/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          topicId: "travel-tips",
+          topicName: "Travel Checklist Updates"
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubscribeStatus("success");
+        setSubscribeMessage(data.message);
+        setTimeout(() => {
+          setShowSubscribeModal(false);
+          setEmail("");
+          setSubscribeStatus("idle");
+          setSubscribeMessage("");
+        }, 3000);
+      } else {
+        setSubscribeStatus("error");
+        setSubscribeMessage(data.error || "Failed to subscribe.");
+      }
+    } catch (e) {
+      console.error("Subscribe error:", e);
+      setSubscribeStatus("error");
+      setSubscribeMessage("Network error. Please try again.");
+    }
+  };
+
+  // Feedback handler
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackStatus("submitting");
+    try {
+      const serverUrl = window.location.hostname === "localhost" ? "" : "https://travel-checklist-q79n.onrender.com";
+      const response = await fetch(`${serverUrl}/api/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "user_feedback",
+          data: { feedback: feedbackText, destination: profile.destination }
+        })
+      });
+      if (response.ok) {
+        setFeedbackStatus("success");
+        setTimeout(() => {
+          setShowFeedbackModal(false);
+          setFeedbackText("");
+          setFeedbackStatus("idle");
+        }, 2000);
+      } else {
+        setFeedbackStatus("error");
+      }
+    } catch (e) {
+      console.error("Feedback error:", e);
+      setFeedbackStatus("error");
+    }
+  };
+
   // Save checklist functions
   const persistSavedChecklists = (lists: SavedChecklist[]) => {
     try { localStorage.setItem(SAVED_CHECKLISTS_KEY, JSON.stringify(lists)); } catch (e) {}
@@ -2268,7 +2350,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
       {showBanner && (
         <div style={{ backgroundColor: COLORS.accentLight, borderRadius: 16, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.primaryDark }}>Get travel tips & packing hacks!</div>
-          <button style={{ background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }}><Mail size={14} /> Subscribe</button>
+          <button onClick={() => setShowSubscribeModal(true)} style={{ background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }}><Mail size={14} /> Subscribe</button>
           <div style={{ position: "absolute", top: 8, right: 8, cursor: "pointer", color: COLORS.textSecondary }} onClick={() => { setShowBanner(false); localStorage.setItem(BANNER_STORAGE_KEY, Date.now().toString()); }}><X size={16} /></div>
         </div>
       )}
@@ -2311,7 +2393,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
               </div>
               <div style={{ display: "flex", alignItems: "center", color: COLORS.textSecondary }}>to</div>
               <div style={{ flex: 1 }}>
-                <input type="date" style={styles.input} value={profile.endDate} onChange={(e) => setProfile(p => ({ ...p, endDate: e.target.value }))} />
+                <input type="date" style={styles.input} value={profile.endDate} min={profile.startDate || undefined} onChange={(e) => setProfile(p => ({ ...p, endDate: e.target.value }))} />
               </div>
             </div>
           </div>
@@ -2908,12 +2990,126 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
       )}
 
       <div style={styles.footer} className="no-print">
-        <button style={styles.footerBtn} onClick={() => { if (window.confirm("Clear all saved data? This will remove your checklist and saved trips.")) resetAll(); }}><RotateCcw size={16} /> Clear Data</button>
+        <button style={styles.footerBtn} onClick={resetAll}><RotateCcw size={16} /> Reset</button>
         <button style={styles.footerBtn}><Heart size={16} /> Donate</button>
-        <button style={styles.footerBtn} onClick={() => window.open("mailto:support@layer3labs.io?subject=Travel%20Checklist%20Feedback", "_blank")}><MessageSquare size={16} /> Feedback</button>
+        <button style={styles.footerBtn} onClick={() => setShowFeedbackModal(true)}><MessageSquare size={16} /> Feedback</button>
         <button style={styles.footerBtn} onClick={() => { trackEvent("widget_print_share", { destination: profile.destination }); window.print(); }}><Printer size={16} /> Print</button>
       </div>
       </div>{/* End screen-view */}
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 1000
+        }} onClick={() => setShowFeedbackModal(false)}>
+          <div style={{
+            backgroundColor: "white", borderRadius: 16, padding: 24, width: "90%", maxWidth: 400
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Feedback</h3>
+              <button onClick={() => setShowFeedbackModal(false)} style={{
+                background: "none", border: "none", cursor: "pointer", padding: 4
+              }}><X size={20} color={COLORS.textSecondary} /></button>
+            </div>
+            <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 16 }}>
+              Help us improve the travel checklist.
+            </p>
+            {feedbackStatus === "success" ? (
+              <div style={{ textAlign: "center", padding: 20, color: COLORS.primary, fontWeight: 600 }}>
+                Thanks for your feedback!
+              </div>
+            ) : (
+              <>
+                <textarea
+                  style={{ ...styles.input, height: 120, resize: "none", fontFamily: "inherit" }}
+                  placeholder="Tell us what you think..."
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                />
+                {feedbackStatus === "error" && (
+                  <div style={{ color: "#EF4444", fontSize: 14, marginTop: 8, marginBottom: 8 }}>
+                    Failed to send. Please try again.
+                  </div>
+                )}
+                <button
+                  style={{
+                    width: "100%", marginTop: 12, padding: "14px 16px", borderRadius: 12, border: "none",
+                    backgroundColor: feedbackText.trim() ? COLORS.primary : COLORS.border,
+                    color: "white", fontSize: 14, fontWeight: 600,
+                    cursor: feedbackText.trim() ? "pointer" : "not-allowed"
+                  }}
+                  onClick={handleFeedbackSubmit}
+                  disabled={feedbackStatus === "submitting" || !feedbackText.trim()}
+                >
+                  {feedbackStatus === "submitting" ? "Sending..." : "Send Feedback"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Subscribe Modal */}
+      {showSubscribeModal && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+          alignItems: "center", justifyContent: "center", zIndex: 1000
+        }} onClick={() => setShowSubscribeModal(false)}>
+          <div style={{
+            backgroundColor: "white", borderRadius: 16, padding: 24, width: "90%", maxWidth: 400
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Sign Up For Travel Tips</h3>
+              <button onClick={() => setShowSubscribeModal(false)} style={{
+                background: "none", border: "none", cursor: "pointer", padding: 4
+              }}><X size={20} color={COLORS.textSecondary} /></button>
+            </div>
+            <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 }}>
+              Get personalized packing tips and travel hacks.
+            </p>
+            {subscribeStatus === "success" ? (
+              <div style={{ textAlign: "center", padding: 20, color: COLORS.primary, fontWeight: 600 }}>
+                <div style={{ fontSize: 40, marginBottom: 10 }}>🎉</div>
+                {subscribeMessage}
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: COLORS.textMain }}>Email Address</label>
+                  <input
+                    style={styles.input}
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                {subscribeStatus === "error" && (
+                  <div style={{ color: "#EF4444", fontSize: 14, marginBottom: 16, textAlign: "center" }}>
+                    {subscribeMessage}
+                  </div>
+                )}
+                <button
+                  style={{
+                    width: "100%", padding: "14px 16px", borderRadius: 12, border: "none",
+                    backgroundColor: COLORS.primary, color: "white", fontSize: 14, fontWeight: 600,
+                    cursor: subscribeStatus === "loading" ? "wait" : "pointer"
+                  }}
+                  onClick={handleSubscribe}
+                  disabled={subscribeStatus === "loading"}
+                >
+                  {subscribeStatus === "loading" ? "Subscribing..." : "Subscribe"}
+                </button>
+                <div style={{ fontSize: 11, color: COLORS.textSecondary, textAlign: "center", marginTop: 12, lineHeight: 1.4 }}>
+                  By subscribing, you agree to receive emails. Unsubscribe anytime.
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Print-only view - hidden on screen, shown when printing */}
       {checklistGenerated && (

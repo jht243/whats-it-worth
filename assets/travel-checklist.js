@@ -25085,7 +25085,7 @@ var TRAVELER_PRESETS = {
       { name: "Workout shirts", category: "workout", quantity: "6" },
       { name: "Workout shorts", category: "workout", quantity: "4" },
       { name: "Training shoes", category: "workout" },
-      { name: "Workout socks", category: "workout", quantity: "6 pairs" },
+      { name: "Workout socks", category: "workout", quantity: "6" },
       { name: "Sports bra", category: "workout", quantity: "5", gender: "female" },
       { name: "Compression shorts", category: "workout", quantity: "3" },
       { name: "Resistance bands", category: "activity" },
@@ -25294,7 +25294,7 @@ var parsePersonalNotes = (notes) => {
     items.push({ id: "note-gym-shorts", name: "Workout shorts", category: "workout", quantity: "3", essential: false, checked: false });
     items.push({ id: "note-sports-bra", name: "Sports bra", category: "workout", quantity: "3", essential: false, checked: false, gender: "female" });
     items.push({ id: "note-gym-shoes", name: "Training shoes", category: "workout", essential: false, checked: false });
-    items.push({ id: "note-gym-socks", name: "Workout socks", category: "workout", quantity: "3 pairs", essential: false, checked: false });
+    items.push({ id: "note-gym-socks", name: "Workout socks", category: "workout", quantity: "3", essential: false, checked: false });
     items.push({ id: "note-gym-gloves", name: "Workout gloves", category: "activity", essential: false, checked: false });
     items.push({ id: "note-gym-towel", name: "Gym towel", category: "personal", essential: false, checked: false });
     items.push({ id: "note-gym-bottle", name: "Water bottle", category: "personal", essential: false, checked: false });
@@ -25795,7 +25795,12 @@ var DestinationAutocomplete = ({ value, onChange, style }) => {
         },
         onFocus: () => {
           setUserHasFocused(true);
-          if (suggestions.length > 0) setIsOpen(true);
+        },
+        onBlur: () => {
+          setTimeout(() => {
+            setUserHasFocused(false);
+            setIsOpen(false);
+          }, 150);
         },
         onKeyDown: handleKeyDown,
         placeholder: "Start typing any city...",
@@ -26036,6 +26041,13 @@ function TravelChecklist({ initialData: initialData2 }) {
   const [saveChecklistName, setSaveChecklistName] = (0, import_react3.useState)("");
   const [editingChecklistId, setEditingChecklistId] = (0, import_react3.useState)(null);
   const [showSavedList, setShowSavedList] = (0, import_react3.useState)(false);
+  const [showSubscribeModal, setShowSubscribeModal] = (0, import_react3.useState)(false);
+  const [email, setEmail] = (0, import_react3.useState)("");
+  const [subscribeStatus, setSubscribeStatus] = (0, import_react3.useState)("idle");
+  const [subscribeMessage, setSubscribeMessage] = (0, import_react3.useState)("");
+  const [showFeedbackModal, setShowFeedbackModal] = (0, import_react3.useState)(false);
+  const [feedbackText, setFeedbackText] = (0, import_react3.useState)("");
+  const [feedbackStatus, setFeedbackStatus] = (0, import_react3.useState)("idle");
   const [weatherForecast, setWeatherForecast] = (0, import_react3.useState)(null);
   const [weatherLoading, setWeatherLoading] = (0, import_react3.useState)(false);
   const [individualPrefs, setIndividualPrefs] = (0, import_react3.useState)(saved?.individualPrefs || {});
@@ -26499,6 +26511,72 @@ function TravelChecklist({ initialData: initialData2 }) {
     setChecklistGenerated(false);
     setSelectedTab("shared");
   };
+  const handleSubscribe = async () => {
+    if (!email || !email.includes("@")) {
+      setSubscribeMessage("Please enter a valid email.");
+      setSubscribeStatus("error");
+      return;
+    }
+    setSubscribeStatus("loading");
+    try {
+      const serverUrl = window.location.hostname === "localhost" ? "" : "https://travel-checklist-q79n.onrender.com";
+      const response = await fetch(`${serverUrl}/api/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          topicId: "travel-tips",
+          topicName: "Travel Checklist Updates"
+        })
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setSubscribeStatus("success");
+        setSubscribeMessage(data.message);
+        setTimeout(() => {
+          setShowSubscribeModal(false);
+          setEmail("");
+          setSubscribeStatus("idle");
+          setSubscribeMessage("");
+        }, 3e3);
+      } else {
+        setSubscribeStatus("error");
+        setSubscribeMessage(data.error || "Failed to subscribe.");
+      }
+    } catch (e) {
+      console.error("Subscribe error:", e);
+      setSubscribeStatus("error");
+      setSubscribeMessage("Network error. Please try again.");
+    }
+  };
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackText.trim()) return;
+    setFeedbackStatus("submitting");
+    try {
+      const serverUrl = window.location.hostname === "localhost" ? "" : "https://travel-checklist-q79n.onrender.com";
+      const response = await fetch(`${serverUrl}/api/track`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "user_feedback",
+          data: { feedback: feedbackText, destination: profile.destination }
+        })
+      });
+      if (response.ok) {
+        setFeedbackStatus("success");
+        setTimeout(() => {
+          setShowFeedbackModal(false);
+          setFeedbackText("");
+          setFeedbackStatus("idle");
+        }, 2e3);
+      } else {
+        setFeedbackStatus("error");
+      }
+    } catch (e) {
+      console.error("Feedback error:", e);
+      setFeedbackStatus("error");
+    }
+  };
   const persistSavedChecklists = (lists) => {
     try {
       localStorage.setItem(SAVED_CHECKLISTS_KEY, JSON.stringify(lists));
@@ -26822,7 +26900,7 @@ function TravelChecklist({ initialData: initialData2 }) {
       ] }),
       showBanner && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { backgroundColor: COLORS.accentLight, borderRadius: 16, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 14, fontWeight: 600, color: COLORS.primaryDark }, children: "Get travel tips & packing hacks!" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: { background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => setShowSubscribeModal(true), style: { background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, { size: 14 }),
           " Subscribe"
         ] }),
@@ -26876,7 +26954,7 @@ function TravelChecklist({ initialData: initialData2 }) {
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 16 }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "date", style: styles.input, value: profile.startDate, onChange: (e) => setProfile((p) => ({ ...p, startDate: e.target.value })) }) }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", alignItems: "center", color: COLORS.textSecondary }, children: "to" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "date", style: styles.input, value: profile.endDate, onChange: (e) => setProfile((p) => ({ ...p, endDate: e.target.value })) }) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { flex: 1 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { type: "date", style: styles.input, value: profile.endDate, min: profile.startDate || void 0, onChange: (e) => setProfile((p) => ({ ...p, endDate: e.target.value })) }) })
           ] })
         ] }),
         profile.destination && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
@@ -27565,17 +27643,15 @@ function TravelChecklist({ initialData: initialData2 }) {
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.footer, className: "no-print", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => {
-          if (window.confirm("Clear all saved data? This will remove your checklist and saved trips.")) resetAll();
-        }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: resetAll, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RotateCcw, { size: 16 }),
-          " Clear Data"
+          " Reset"
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, { size: 16 }),
           " Donate"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => window.open("mailto:support@layer3labs.io?subject=Travel%20Checklist%20Feedback", "_blank"), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => setShowFeedbackModal(true), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageSquare, { size: 16 }),
           " Feedback"
         ] }),
@@ -27588,6 +27664,134 @@ function TravelChecklist({ initialData: initialData2 }) {
         ] })
       ] })
     ] }),
+    showFeedbackModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1e3
+    }, onClick: () => setShowFeedbackModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      backgroundColor: "white",
+      borderRadius: 16,
+      padding: 24,
+      width: "90%",
+      maxWidth: 400
+    }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { margin: 0, fontSize: 20, fontWeight: 700 }, children: "Feedback" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setShowFeedbackModal(false), style: {
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: 4
+        }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { size: 20, color: COLORS.textSecondary }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 16 }, children: "Help us improve the travel checklist." }),
+      feedbackStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { textAlign: "center", padding: 20, color: COLORS.primary, fontWeight: 600 }, children: "Thanks for your feedback!" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "textarea",
+          {
+            style: { ...styles.input, height: 120, resize: "none", fontFamily: "inherit" },
+            placeholder: "Tell us what you think...",
+            value: feedbackText,
+            onChange: (e) => setFeedbackText(e.target.value)
+          }
+        ),
+        feedbackStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: "#EF4444", fontSize: 14, marginTop: 8, marginBottom: 8 }, children: "Failed to send. Please try again." }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            style: {
+              width: "100%",
+              marginTop: 12,
+              padding: "14px 16px",
+              borderRadius: 12,
+              border: "none",
+              backgroundColor: feedbackText.trim() ? COLORS.primary : COLORS.border,
+              color: "white",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: feedbackText.trim() ? "pointer" : "not-allowed"
+            },
+            onClick: handleFeedbackSubmit,
+            disabled: feedbackStatus === "submitting" || !feedbackText.trim(),
+            children: feedbackStatus === "submitting" ? "Sending..." : "Send Feedback"
+          }
+        )
+      ] })
+    ] }) }),
+    showSubscribeModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1e3
+    }, onClick: () => setShowSubscribeModal(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      backgroundColor: "white",
+      borderRadius: 16,
+      padding: 24,
+      width: "90%",
+      maxWidth: 400
+    }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { margin: 0, fontSize: 20, fontWeight: 700 }, children: "Sign Up For Travel Tips" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", { onClick: () => setShowSubscribeModal(false), style: {
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: 4
+        }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { size: 20, color: COLORS.textSecondary }) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 }, children: "Get personalized packing tips and travel hacks." }),
+      subscribeStatus === "success" ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { textAlign: "center", padding: 20, color: COLORS.primary, fontWeight: 600 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 40, marginBottom: 10 }, children: "\u{1F389}" }),
+        subscribeMessage
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 16 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { style: { display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: COLORS.textMain }, children: "Email Address" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "input",
+            {
+              style: styles.input,
+              placeholder: "you@example.com",
+              value: email,
+              onChange: (e) => setEmail(e.target.value)
+            }
+          )
+        ] }),
+        subscribeStatus === "error" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { color: "#EF4444", fontSize: 14, marginBottom: 16, textAlign: "center" }, children: subscribeMessage }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            style: {
+              width: "100%",
+              padding: "14px 16px",
+              borderRadius: 12,
+              border: "none",
+              backgroundColor: COLORS.primary,
+              color: "white",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: subscribeStatus === "loading" ? "wait" : "pointer"
+            },
+            onClick: handleSubscribe,
+            disabled: subscribeStatus === "loading",
+            children: subscribeStatus === "loading" ? "Subscribing..." : "Subscribe"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 11, color: COLORS.textSecondary, textAlign: "center", marginTop: 12, lineHeight: 1.4 }, children: "By subscribing, you agree to receive emails. Unsubscribe anytime." })
+      ] })
+    ] }) }),
     checklistGenerated && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "print-view", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "print-header", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h1", { children: [
