@@ -26704,6 +26704,24 @@ function TravelChecklist({ initialData: initialData2 }) {
     footerBtn: { display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", color: COLORS.textSecondary, fontSize: 14, fontWeight: 600, padding: 8 }
   };
   (0, import_react3.useEffect)(() => {
+    const styleId = "travel-checklist-btn-styles";
+    if (document.getElementById(styleId)) return;
+    const btnStyles = document.createElement("style");
+    btnStyles.id = styleId;
+    btnStyles.textContent = `
+      .btn-press {
+        transition: transform 0.1s ease, opacity 0.2s;
+      }
+      .btn-press:active {
+        transform: scale(0.95);
+      }
+      .btn-press:hover {
+        opacity: 0.7;
+      }
+    `;
+    document.head.appendChild(btnStyles);
+  }, []);
+  (0, import_react3.useEffect)(() => {
     const styleId = "travel-checklist-print-styles";
     if (document.getElementById(styleId)) return;
     const printStyles = document.createElement("style");
@@ -26900,7 +26918,7 @@ function TravelChecklist({ initialData: initialData2 }) {
       ] }),
       showBanner && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { backgroundColor: COLORS.accentLight, borderRadius: 16, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 14, fontWeight: 600, color: COLORS.primaryDark }, children: "Get travel tips & packing hacks!" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => setShowSubscribeModal(true), style: { background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => setShowSubscribeModal(true), className: "btn-press", style: { background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, { size: 14 }),
           " Subscribe"
         ] }),
@@ -27254,6 +27272,7 @@ function TravelChecklist({ initialData: initialData2 }) {
             "button",
             {
               type: "button",
+              className: "btn-press",
               onClick: () => togglePreset(key),
               style: {
                 padding: "12px 14px",
@@ -27278,7 +27297,7 @@ function TravelChecklist({ initialData: initialData2 }) {
             key
           )) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: handleGenerate, disabled: !profile.destination, style: {
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: handleGenerate, disabled: !profile.destination, className: "btn-press", style: {
           width: "100%",
           padding: 16,
           borderRadius: 16,
@@ -27350,7 +27369,7 @@ function TravelChecklist({ initialData: initialData2 }) {
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => {
               trackEvent("widget_print_share", { destination: profile.destination });
               window.print();
-            }, style: { marginLeft: "auto", background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, padding: "6px 10px", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }, children: [
+            }, className: "btn-press", style: { marginLeft: "auto", background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, padding: "6px 10px", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, { size: 14 }),
               " Print"
             ] })
@@ -27364,6 +27383,7 @@ function TravelChecklist({ initialData: initialData2 }) {
               return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
                 "button",
                 {
+                  className: "btn-press",
                   onClick: () => setSelectedTab(t.id),
                   style: {
                     padding: "8px 16px",
@@ -27507,7 +27527,7 @@ function TravelChecklist({ initialData: initialData2 }) {
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AddItemInput, { category, onAdd: (name, qty) => addItem(category, name, qty) })
             ] })
           ] }, category)),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => openSaveModal(), style: {
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { onClick: () => openSaveModal(), className: "btn-press", style: {
             width: "100%",
             padding: 16,
             borderRadius: 16,
@@ -27608,6 +27628,7 @@ function TravelChecklist({ initialData: initialData2 }) {
                 setSaveChecklistName("");
                 setEditingChecklistId(null);
               },
+              className: "btn-press",
               style: {
                 flex: 1,
                 padding: "12px 16px",
@@ -27627,6 +27648,7 @@ function TravelChecklist({ initialData: initialData2 }) {
             {
               onClick: handleSaveChecklist,
               disabled: !saveChecklistName.trim(),
+              className: "btn-press",
               style: {
                 flex: 1,
                 padding: "12px 16px",
@@ -27644,19 +27666,19 @@ function TravelChecklist({ initialData: initialData2 }) {
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.footer, className: "no-print", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: resetAll, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, className: "btn-press", onClick: resetAll, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RotateCcw, { size: 16 }),
           " Reset"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, className: "btn-press", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, { size: 16 }),
           " Donate"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => setShowFeedbackModal(true), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, className: "btn-press", onClick: () => setShowFeedbackModal(true), children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageSquare, { size: 16 }),
           " Feedback"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => {
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, className: "btn-press", onClick: () => {
           trackEvent("widget_print_share", { destination: profile.destination });
           window.print();
         }, children: [
@@ -27709,6 +27731,7 @@ function TravelChecklist({ initialData: initialData2 }) {
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
+            className: "btn-press",
             style: {
               width: "100%",
               marginTop: 12,
@@ -27778,6 +27801,7 @@ function TravelChecklist({ initialData: initialData2 }) {
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
           "button",
           {
+            className: "btn-press",
             style: {
               width: "100%",
               padding: "14px 16px",

@@ -2157,6 +2157,27 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
     footerBtn: { display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", color: COLORS.textSecondary, fontSize: 14, fontWeight: 600, padding: 8 }
   };
 
+  // Inject button press styles for feedback
+  useEffect(() => {
+    const styleId = 'travel-checklist-btn-styles';
+    if (document.getElementById(styleId)) return;
+    
+    const btnStyles = document.createElement('style');
+    btnStyles.id = styleId;
+    btnStyles.textContent = `
+      .btn-press {
+        transition: transform 0.1s ease, opacity 0.2s;
+      }
+      .btn-press:active {
+        transform: scale(0.95);
+      }
+      .btn-press:hover {
+        opacity: 0.7;
+      }
+    `;
+    document.head.appendChild(btnStyles);
+  }, []);
+  
   // Inject print styles
   useEffect(() => {
     const styleId = 'travel-checklist-print-styles';
@@ -2350,7 +2371,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
       {showBanner && (
         <div style={{ backgroundColor: COLORS.accentLight, borderRadius: 16, padding: 16, marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
           <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.primaryDark }}>Get travel tips & packing hacks!</div>
-          <button onClick={() => setShowSubscribeModal(true)} style={{ background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }}><Mail size={14} /> Subscribe</button>
+          <button onClick={() => setShowSubscribeModal(true)} className="btn-press" style={{ background: COLORS.primary, color: "white", border: "none", borderRadius: 24, padding: "10px 16px", fontWeight: 700, cursor: "pointer", marginRight: 24 }}><Mail size={14} /> Subscribe</button>
           <div style={{ position: "absolute", top: 8, right: 8, cursor: "pointer", color: COLORS.textSecondary }} onClick={() => { setShowBanner(false); localStorage.setItem(BANNER_STORAGE_KEY, Date.now().toString()); }}><X size={16} /></div>
         </div>
       )}
@@ -2704,6 +2725,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
                   <button
                     key={key}
                     type="button"
+                    className="btn-press"
                     onClick={() => togglePreset(key)}
                     style={{
                       padding: "12px 14px", borderRadius: 12,
@@ -2720,7 +2742,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
             </div>
           )}
 
-          <button onClick={handleGenerate} disabled={!profile.destination} style={{
+          <button onClick={handleGenerate} disabled={!profile.destination} className="btn-press" style={{
             width: "100%", padding: 16, borderRadius: 16, border: "none",
             backgroundColor: profile.destination ? COLORS.primary : COLORS.border,
             color: profile.destination ? "white" : COLORS.textSecondary,
@@ -2752,7 +2774,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
                 {getTraveler("pet").male > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3 }}>🐕 {getTraveler("pet").male}</span>}
                 {getTraveler("pet").female > 0 && <span style={{ display: "flex", alignItems: "center", gap: 3 }}>🐈 {getTraveler("pet").female}</span>}
               </span>
-              <button onClick={() => { trackEvent("widget_print_share", { destination: profile.destination }); window.print(); }} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, padding: "6px 10px", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
+              <button onClick={() => { trackEvent("widget_print_share", { destination: profile.destination }); window.print(); }} className="btn-press" style={{ marginLeft: "auto", background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, padding: "6px 10px", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
                 <Printer size={14} /> Print
               </button>
             </div>
@@ -2771,6 +2793,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
                   return (
                     <button
                       key={t.id}
+                      className="btn-press"
                       onClick={() => setSelectedTab(t.id)}
                       style={{
                         padding: "8px 16px", borderRadius: 20, 
@@ -2894,7 +2917,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
           ))}
 
           {/* Save Checklist Button */}
-          <button onClick={() => openSaveModal()} style={{
+          <button onClick={() => openSaveModal()} className="btn-press" style={{
             width: "100%", padding: 16, borderRadius: 16, border: "none",
             background: `linear-gradient(135deg, ${COLORS.blue}, ${COLORS.primaryDark})`,
             color: "white", fontSize: 16, fontWeight: 700, cursor: "pointer",
@@ -2965,6 +2988,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
             <div style={{ display: "flex", gap: 12 }}>
               <button 
                 onClick={() => { setShowSaveModal(false); setSaveChecklistName(""); setEditingChecklistId(null); }}
+                className="btn-press"
                 style={{
                   flex: 1, padding: "12px 16px", borderRadius: 12, border: `1px solid ${COLORS.border}`,
                   backgroundColor: "white", color: COLORS.textMain, fontSize: 14, fontWeight: 600, cursor: "pointer"
@@ -2975,6 +2999,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
               <button 
                 onClick={handleSaveChecklist}
                 disabled={!saveChecklistName.trim()}
+                className="btn-press"
                 style={{
                   flex: 1, padding: "12px 16px", borderRadius: 12, border: "none",
                   backgroundColor: saveChecklistName.trim() ? COLORS.primary : COLORS.border,
@@ -2990,10 +3015,10 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
       )}
 
       <div style={styles.footer} className="no-print">
-        <button style={styles.footerBtn} onClick={resetAll}><RotateCcw size={16} /> Reset</button>
-        <button style={styles.footerBtn}><Heart size={16} /> Donate</button>
-        <button style={styles.footerBtn} onClick={() => setShowFeedbackModal(true)}><MessageSquare size={16} /> Feedback</button>
-        <button style={styles.footerBtn} onClick={() => { trackEvent("widget_print_share", { destination: profile.destination }); window.print(); }}><Printer size={16} /> Print</button>
+        <button style={styles.footerBtn} className="btn-press" onClick={resetAll}><RotateCcw size={16} /> Reset</button>
+        <button style={styles.footerBtn} className="btn-press"><Heart size={16} /> Donate</button>
+        <button style={styles.footerBtn} className="btn-press" onClick={() => setShowFeedbackModal(true)}><MessageSquare size={16} /> Feedback</button>
+        <button style={styles.footerBtn} className="btn-press" onClick={() => { trackEvent("widget_print_share", { destination: profile.destination }); window.print(); }}><Printer size={16} /> Print</button>
       </div>
       </div>{/* End screen-view */}
 
@@ -3034,6 +3059,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
                   </div>
                 )}
                 <button
+                  className="btn-press"
                   style={{
                     width: "100%", marginTop: 12, padding: "14px 16px", borderRadius: 12, border: "none",
                     backgroundColor: feedbackText.trim() ? COLORS.primary : COLORS.border,
@@ -3092,6 +3118,7 @@ export default function TravelChecklist({ initialData }: { initialData?: any }) 
                   </div>
                 )}
                 <button
+                  className="btn-press"
                   style={{
                     width: "100%", padding: "14px 16px", borderRadius: 12, border: "none",
                     backgroundColor: COLORS.primary, color: "white", fontSize: 14, fontWeight: 600,
