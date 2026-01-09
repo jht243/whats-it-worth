@@ -26038,8 +26038,7 @@ function WhatsItWorth({ initialData: initialData2 }) {
       backgroundColor: COLORS.bg,
       fontFamily: "'Inter', sans-serif",
       padding: 20,
-      boxSizing: "border-box",
-      minHeight: "100vh"
+      boxSizing: "border-box"
     },
     card: {
       backgroundColor: COLORS.card,
