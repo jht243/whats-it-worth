@@ -346,11 +346,10 @@ const loadSavedData = (): AppData => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const { data, timestamp } = JSON.parse(saved);
-      // Expire after 30 days (720 hours)
-      if ((new Date().getTime() - timestamp) / (1000 * 60 * 60) < 720) {
-        return { ...DEFAULT_DATA, ...data };
-      }
+      const parsed = JSON.parse(saved);
+      // Support both old format { data, timestamp } and direct data
+      const data = parsed.data || parsed;
+      return { ...DEFAULT_DATA, ...data };
     }
   } catch (e) {
     localStorage.removeItem(STORAGE_KEY);
@@ -360,10 +359,15 @@ const loadSavedData = (): AppData => {
 
 const saveData = (data: AppData) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, timestamp: new Date().getTime() }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     console.error("Failed to save data:", e);
   }
+};
+
+const resetAllData = () => {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(BANNER_STORAGE_KEY);
 };
 
 // ============ AI VALUATION (Mock - will integrate with OpenAI) ============
@@ -1348,13 +1352,20 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
 
   // Reset all data
   const handleReset = () => {
-    if (!confirm("Are you sure you want to reset all data? This cannot be undone.")) return;
-    localStorage.removeItem(STORAGE_KEY);
+    if (!confirm("Are you sure you want to reset all data? This will delete all your items and vaults. This cannot be undone.")) return;
+    resetAllData();
     setAppData(DEFAULT_DATA);
     setView("dashboard");
     setSelectedVaultId(null);
     setSelectedItemId(null);
+    setShowBanner(true);
     trackEvent("reset_data");
+  };
+
+  // Open donate link
+  const handleDonate = () => {
+    window.open("https://buymeacoffee.com/jonteplitsky", "_blank");
+    trackEvent("donate_click");
   };
 
   // Handle feedback submit
@@ -2117,7 +2128,7 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
         <button style={styles.footerBtn} onClick={handleReset}>
           <RotateCcw size={16} /> Reset
         </button>
-        <button style={styles.footerBtn}>
+        <button style={styles.footerBtn} onClick={handleDonate}>
           <Heart size={16} /> Donate
         </button>
         <button style={styles.footerBtn} onClick={() => setShowFeedbackModal(true)}>

@@ -25033,10 +25033,9 @@ var loadSavedData = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const { data, timestamp } = JSON.parse(saved);
-      if (((/* @__PURE__ */ new Date()).getTime() - timestamp) / (1e3 * 60 * 60) < 720) {
-        return { ...DEFAULT_DATA, ...data };
-      }
+      const parsed = JSON.parse(saved);
+      const data = parsed.data || parsed;
+      return { ...DEFAULT_DATA, ...data };
     }
   } catch (e) {
     localStorage.removeItem(STORAGE_KEY);
@@ -25045,10 +25044,14 @@ var loadSavedData = () => {
 };
 var saveData = (data) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, timestamp: (/* @__PURE__ */ new Date()).getTime() }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (e) {
     console.error("Failed to save data:", e);
   }
+};
+var resetAllData = () => {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(BANNER_STORAGE_KEY);
 };
 var detectCategory = (text) => {
   const lower = text.toLowerCase();
@@ -25901,13 +25904,18 @@ function WhatsItWorth({ initialData: initialData2 }) {
     trackEvent("refresh_prices");
   };
   const handleReset = () => {
-    if (!confirm("Are you sure you want to reset all data? This cannot be undone.")) return;
-    localStorage.removeItem(STORAGE_KEY);
+    if (!confirm("Are you sure you want to reset all data? This will delete all your items and vaults. This cannot be undone.")) return;
+    resetAllData();
     setAppData(DEFAULT_DATA);
     setView("dashboard");
     setSelectedVaultId(null);
     setSelectedItemId(null);
+    setShowBanner(true);
     trackEvent("reset_data");
+  };
+  const handleDonate = () => {
+    window.open("https://buymeacoffee.com/jonteplitsky", "_blank");
+    trackEvent("donate_click");
   };
   const handleFeedbackSubmit = async () => {
     if (!feedbackText.trim()) return;
@@ -26727,7 +26735,7 @@ function WhatsItWorth({ initialData: initialData2 }) {
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RotateCcw, { size: 16 }),
         " Reset"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: handleDonate, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, { size: 16 }),
         " Donate"
       ] }),
