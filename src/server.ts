@@ -202,7 +202,8 @@ function widgetMeta(widget: WhatsItWorthWidget, bustCache: boolean = false) {
     "openai/componentDescriptions": {
       "item-form": "Input form for item details including description, condition, and category.",
       "valuation-display": "Display showing item valuation and market data.",
-      "progress-tracker": "Progress bar showing how many items have been packed.",
+      "vault-list": "List of user's item vaults organized by category.",
+      "price-sources": "Links to external marketplaces for price verification.",
     },
     "openai/widgetKeywords": [
       "valuation",
@@ -224,21 +225,18 @@ function widgetMeta(widget: WhatsItWorthWidget, bustCache: boolean = false) {
       { "user": "How much is my vintage watch worth?", "assistant": "I've loaded What's It Worth. Let me help you find out the value of your vintage watch." },
     ],
     "openai/starterPrompts": [
-      "What should I pack for my trip?",
       "What is my vintage watch worth?",
       "How much is this antique worth?",
       "Value my collection of baseball cards",
       "What's the market value of my guitar?",
       "How much should I sell this item for?",
       "Appraise my collectibles",
+      "What's my Rolex Submariner worth?",
     ],
     "openai/widgetPrefersBorder": true,
     "openai/widgetCSP": {
       connect_domains: [
-        "https://whats-it-worth.onrender.com",
-        "https://nominatim.openstreetmap.org",
-        "https://api.open-meteo.com",
-        "https://geocoding-api.open-meteo.com"
+        "https://whats-it-worth.onrender.com"
       ],
       resource_domains: [
         "https://whats-it-worth.onrender.com"
@@ -965,8 +963,8 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
       : "N/A";
 
   const paramUsage: Record<string, number> = {};
-  const tripPurposeDist: Record<string, number> = {};
-  const climateDist: Record<string, number> = {};
+  const categoryDist: Record<string, number> = {};
+  const brandDist: Record<string, number> = {};
   
   successLogs.forEach((log) => {
     if (log.params) {
@@ -975,15 +973,15 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
           paramUsage[key] = (paramUsage[key] || 0) + 1;
         }
       });
-      // Track trip purpose distribution
-      if (log.params.purpose) {
-        const purpose = log.params.purpose;
-        tripPurposeDist[purpose] = (tripPurposeDist[purpose] || 0) + 1;
+      // Track category distribution
+      if (log.params.category) {
+        const category = log.params.category;
+        categoryDist[category] = (categoryDist[category] || 0) + 1;
       }
-      // Track climate distribution
-      if (log.params.climate) {
-        const climate = log.params.climate;
-        climateDist[climate] = (climateDist[climate] || 0) + 1;
+      // Track brand distribution
+      if (log.params.brand) {
+        const brand = log.params.brand;
+        brandDist[brand] = (brandDist[brand] || 0) + 1;
       }
     }
   });
@@ -994,54 +992,55 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
     widgetInteractions[humanName] = (widgetInteractions[humanName] || 0) + 1;
   });
   
-  // Trip duration distribution
-  const tripDurationDist: Record<string, number> = {};
+  // Condition distribution
+  const conditionDist: Record<string, number> = {};
   successLogs.forEach((log) => {
-    if (log.params?.trip_duration) {
-      const days = log.params.trip_duration;
+    if (log.params?.condition) {
+      const condition = log.params.condition;
+      conditionDist[condition] = (conditionDist[condition] || 0) + 1;
+    }
+  });
+
+  // Price range distribution
+  const priceRangeDist: Record<string, number> = {};
+  successLogs.forEach((log) => {
+    if (log.params?.estimated_price) {
+      const price = log.params.estimated_price;
       let bucket = "Unknown";
-      if (days <= 3) bucket = "1-3 days";
-      else if (days <= 7) bucket = "4-7 days";
-      else if (days <= 14) bucket = "8-14 days";
-      else bucket = "15+ days";
-      tripDurationDist[bucket] = (tripDurationDist[bucket] || 0) + 1;
+      if (price < 100) bucket = "Under $100";
+      else if (price < 1000) bucket = "$100-$999";
+      else if (price < 10000) bucket = "$1K-$9.9K";
+      else if (price < 100000) bucket = "$10K-$99K";
+      else bucket = "$100K+";
+      priceRangeDist[bucket] = (priceRangeDist[bucket] || 0) + 1;
     }
   });
 
-  // International vs Domestic distribution
-  const tripTypeDist: Record<string, number> = {};
+  // Top models (for watches/items)
+  const modelDist: Record<string, number> = {};
   successLogs.forEach((log) => {
-    if (log.params?.is_international !== undefined) {
-      const tripType = log.params.is_international ? "International" : "Domestic";
-      tripTypeDist[tripType] = (tripTypeDist[tripType] || 0) + 1;
+    if (log.params?.model) {
+      const model = log.params.model;
+      modelDist[model] = (modelDist[model] || 0) + 1;
     }
   });
 
-  // Destinations (top 10)
-  const destinationDist: Record<string, number> = {};
-  successLogs.forEach((log) => {
-    if (log.params?.destination) {
-      const dest = log.params.destination;
-      destinationDist[dest] = (destinationDist[dest] || 0) + 1;
-    }
-  });
-
-  // Checklist Actions
+  // Valuation Actions
   const actionCounts: Record<string, number> = {
-    "Generate Checklist": 0,
-    "Subscribe": 0,
-    "Check Item": 0, 
-    "Add Custom Item": 0,
-    "Save Checklist": 0,
+    "Add Item": 0,
+    "Delete Item": 0,
+    "Refine Price": 0, 
+    "View Details": 0,
+    "Reset Data": 0,
     "Print/Share": 0
   };
 
   widgetEvents.forEach(log => {
-      if (log.event === "widget_generate_checklist") actionCounts["Generate Checklist"]++;
-      if (log.event === "widget_notify_me_subscribe") actionCounts["Subscribe"]++;
-      if (log.event === "widget_check_item") actionCounts["Check Item"]++;
-      if (log.event === "widget_add_custom_item") actionCounts["Add Custom Item"]++;
-      if (log.event === "widget_save_checklist") actionCounts["Save Checklist"]++;
+      if (log.event === "widget_add_item") actionCounts["Add Item"]++;
+      if (log.event === "widget_delete_item") actionCounts["Delete Item"]++;
+      if (log.event === "widget_refine_price") actionCounts["Refine Price"]++;
+      if (log.event === "widget_view_details") actionCounts["View Details"]++;
+      if (log.event === "widget_reset_data") actionCounts["Reset Data"]++;
       if (log.event === "widget_print_share") actionCounts["Print/Share"]++;
   });
 
@@ -1135,16 +1134,16 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 
     <div class="grid" style="margin-bottom: 20px;">
       <div class="card">
-        <h2>Trip Purpose</h2>
+        <h2>Item Categories</h2>
         <table>
-          <thead><tr><th>Purpose</th><th>Count</th></tr></thead>
+          <thead><tr><th>Category</th><th>Count</th></tr></thead>
           <tbody>
-            ${Object.entries(tripPurposeDist).length > 0 ? Object.entries(tripPurposeDist)
+            ${Object.entries(categoryDist).length > 0 ? Object.entries(categoryDist)
               .sort((a, b) => (b[1] as number) - (a[1] as number))
               .map(
-                ([purpose, count]) => `
+                ([category, count]) => `
               <tr>
-                <td>${purpose}</td>
+                <td>${category}</td>
                 <td>${count}</td>
               </tr>
             `
@@ -1198,16 +1197,16 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 
     <div class="grid" style="margin-bottom: 20px;">
       <div class="card">
-        <h2>Trip Duration</h2>
+        <h2>Item Condition</h2>
         <table>
-          <thead><tr><th>Duration</th><th>Users</th></tr></thead>
+          <thead><tr><th>Condition</th><th>Count</th></tr></thead>
           <tbody>
-            ${Object.entries(tripDurationDist).length > 0 ? Object.entries(tripDurationDist)
+            ${Object.entries(conditionDist).length > 0 ? Object.entries(conditionDist)
               .sort((a, b) => (b[1] as number) - (a[1] as number))
               .map(
-                ([duration, count]) => `
+                ([condition, count]) => `
               <tr>
-                <td>${duration}</td>
+                <td>${condition}</td>
                 <td>${count}</td>
               </tr>
             `
@@ -1218,16 +1217,16 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
       </div>
       
       <div class="card">
-        <h2>Trip Type</h2>
+        <h2>Price Ranges</h2>
         <table>
-          <thead><tr><th>Type</th><th>Users</th></tr></thead>
+          <thead><tr><th>Range</th><th>Count</th></tr></thead>
           <tbody>
-            ${Object.entries(tripTypeDist).length > 0 ? Object.entries(tripTypeDist)
+            ${Object.entries(priceRangeDist).length > 0 ? Object.entries(priceRangeDist)
               .sort((a, b) => (b[1] as number) - (a[1] as number))
               .map(
-                ([tripType, count]) => `
+                ([range, count]) => `
               <tr>
-                <td>${tripType}</td>
+                <td>${range}</td>
                 <td>${count}</td>
               </tr>
             `
@@ -1238,17 +1237,17 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
       </div>
       
       <div class="card">
-        <h2>Top Destinations</h2>
+        <h2>Top Brands</h2>
         <table>
-          <thead><tr><th>Destination</th><th>Users</th></tr></thead>
+          <thead><tr><th>Brand</th><th>Count</th></tr></thead>
           <tbody>
-            ${Object.entries(destinationDist).length > 0 ? Object.entries(destinationDist)
+            ${Object.entries(brandDist).length > 0 ? Object.entries(brandDist)
               .sort((a, b) => (b[1] as number) - (a[1] as number))
               .slice(0, 10)
               .map(
-                ([dest, count]) => `
+                ([brand, count]) => `
               <tr>
-                <td>${dest}</td>
+                <td>${brand}</td>
                 <td>${count}</td>
               </tr>
             `
