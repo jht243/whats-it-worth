@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import TravelChecklist from "./TravelChecklist";
+import WhatsItWorth from "./WhatsItWorth";
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -107,18 +107,18 @@ const getHydrationData = (): any => {
   return {};
 };
 
-console.log("[Main] Travel Checklist main.tsx loading...");
+console.log("[Main] What's It Worth main.tsx loading...");
 
-// App wrapper - Travel Checklist
+// App wrapper - What's It Worth
 function App({ initialData }: { initialData: any }) {
-  return <TravelChecklist initialData={initialData} />;
+  return <WhatsItWorth initialData={initialData} />;
 }
 
 // Get initial data
-const container = document.getElementById("travel-checklist-root");
+const container = document.getElementById("whats-it-worth-root");
 
 if (!container) {
-  throw new Error("travel-checklist-root element not found");
+  throw new Error("whats-it-worth-root element not found");
 }
 
 const root = createRoot(container);

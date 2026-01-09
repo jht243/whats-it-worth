@@ -30,7 +30,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-type TravelChecklistWidget = {
+type WhatsItWorthWidget = {
   id: string;
   title: string;
   templateUri: string;
@@ -124,31 +124,20 @@ function classifyDevice(userAgent?: string | null): string {
 }
 
 function computeSummary(args: any) {
-  // Compute travel checklist summary
-  const destination = args.destination || "Not specified";
-  const tripDuration = Number(args.trip_duration) || 5;
-  const isInternational = Boolean(args.is_international);
-  const climate = args.climate || "summer";
-  const purpose = args.purpose || "leisure";
-  const travelers = Number(args.travelers) || 1;
-  
-  // Estimate checklist items based on trip profile
-  let estimatedItems = 25; // Base items
-  if (isInternational) estimatedItems += 5; // Extra documents
-  if (tripDuration > 7) estimatedItems += 5; // More clothing
-  if (purpose === "business") estimatedItems += 3;
-  if (purpose === "adventure") estimatedItems += 8;
-  if (travelers > 1) estimatedItems += 5;
-  
+  // Compute item valuation summary
   return {
-    destination,
-    trip_duration: tripDuration,
-    is_international: isInternational,
-    climate,
-    purpose,
-    travelers,
-    estimated_items: estimatedItems,
-    trip_type: isInternational ? "International" : "Domestic"
+    item_name: args.item_name || null,
+    category: args.category || null,
+    brand: args.brand || null,
+    model: args.model || null,
+    variant: args.variant || null,
+    reference: args.reference || null,
+    size_mm: args.size_mm || null,
+    dial_color: args.dial_color || null,
+    bezel_color: args.bezel_color || null,
+    material: args.material || null,
+    year: args.year || null,
+    condition: args.condition || null,
   };
 }
 
@@ -201,59 +190,58 @@ function readWidgetHtml(componentName: string): string {
 // Added timestamp suffix to force cache invalidation for width fix
 const VERSION = (process.env.RENDER_GIT_COMMIT?.slice(0, 7) || Date.now().toString()) + '-' + Date.now();
 
-function widgetMeta(widget: TravelChecklistWidget, bustCache: boolean = false) {
+function widgetMeta(widget: WhatsItWorthWidget, bustCache: boolean = false) {
   const templateUri = bustCache
-    ? `ui://widget/travel-checklist.html?v=${VERSION}`
+    ? `ui://widget/whats-it-worth.html?v=${VERSION}`
     : widget.templateUri;
 
   return {
     "openai/outputTemplate": templateUri,
     "openai/widgetDescription":
-      "A smart travel checklist generator that creates personalized, customizable packing lists based on your trip profile. Generates checklists for documents, clothing, toiletries, health, tech, activities, and pre-departure tasks. Call this tool immediately with NO arguments to let the user enter their trip details manually. Only provide arguments if the user has explicitly stated them.",
+      "A smart item valuation tool that tells you what your items are worth. Provides valuations for individual items or collections. Call this tool immediately with NO arguments to let the user enter their item details manually. Only provide arguments if the user has explicitly stated them.",
     "openai/componentDescriptions": {
-      "trip-form": "Input form for trip details including destination, duration, travelers, climate, and purpose.",
-      "checklist-display": "Display showing categorized packing checklist items with checkboxes.",
+      "item-form": "Input form for item details including description, condition, and category.",
+      "valuation-display": "Display showing item valuation and market data.",
       "progress-tracker": "Progress bar showing how many items have been packed.",
     },
     "openai/widgetKeywords": [
-      "travel",
-      "checklist",
-      "packing",
-      "vacation",
-      "trip",
-      "luggage",
-      "travel planning",
-      "packing list",
-      "documents",
-      "toiletries",
-      "clothes",
-      "international",
-      "domestic"
+      "valuation",
+      "worth",
+      "appraisal",
+      "item value",
+      "price check",
+      "collectible",
+      "antique",
+      "watch",
+      "jewelry",
+      "art",
+      "sports card",
+      "memorabilia"
     ],
     "openai/sampleConversations": [
-      { "user": "What should I pack for my trip?", "assistant": "Here is the Smart Travel Checklist. Enter your trip details to generate a personalized packing list." },
-      { "user": "I'm going to Paris for 7 days", "assistant": "I'll create a customized packing checklist for your 7-day trip to Paris with all the essentials." },
-      { "user": "Help me pack for a beach vacation", "assistant": "I've loaded the travel checklist for a beach trip. It includes swimwear, sunscreen, and other beach essentials." },
+      { "user": "What is this item worth?", "assistant": "Here is What's It Worth. Enter your item details to find out its value." },
+      { "user": "I have an antique vase from the 1800s", "assistant": "I'll help you find out what your antique vase is worth." },
+      { "user": "How much is my vintage watch worth?", "assistant": "I've loaded What's It Worth. Let me help you find out the value of your vintage watch." },
     ],
     "openai/starterPrompts": [
       "What should I pack for my trip?",
-      "Create a packing list for my vacation",
-      "Help me pack for an international trip",
-      "Beach vacation packing checklist",
-      "Business trip essentials",
-      "What clothing do I need to travel to New York?",
-      "Family vacation packing list",
+      "What is my vintage watch worth?",
+      "How much is this antique worth?",
+      "Value my collection of baseball cards",
+      "What's the market value of my guitar?",
+      "How much should I sell this item for?",
+      "Appraise my collectibles",
     ],
     "openai/widgetPrefersBorder": true,
     "openai/widgetCSP": {
       connect_domains: [
-        "https://travel-checklist-q79n.onrender.com",
+        "https://whats-it-worth.onrender.com",
         "https://nominatim.openstreetmap.org",
         "https://api.open-meteo.com",
         "https://geocoding-api.open-meteo.com"
       ],
       resource_domains: [
-        "https://travel-checklist-q79n.onrender.com"
+        "https://whats-it-worth.onrender.com"
       ],
     },
     "openai/widgetDomain": "https://web-sandbox.oaiusercontent.com",
@@ -264,21 +252,21 @@ function widgetMeta(widget: TravelChecklistWidget, bustCache: boolean = false) {
   } as const;
 }
 
-const widgets: TravelChecklistWidget[] = [
+const widgets: WhatsItWorthWidget[] = [
   {
-    id: "travel-checklist",
-    title: "Smart Travel Checklist — Generate personalized packing lists for any trip",
-    templateUri: `ui://widget/travel-checklist.html?v=${VERSION}`,
+    id: "whats-it-worth",
+    title: "What's It Worth — Find out what your items are worth",
+    templateUri: `ui://widget/whats-it-worth.html?v=${VERSION}`,
     invoking:
-      "Opening the Smart Travel Checklist...",
+      "Opening What's It Worth...",
     invoked:
-      "Here is the Smart Travel Checklist. Enter your trip details to generate a personalized packing list with documents, clothing, toiletries, and more.",
-    html: readWidgetHtml("travel-checklist"),
+      "Here is What's It Worth. Enter your item details to find out their value.",
+    html: readWidgetHtml("whats-it-worth"),
   },
 ];
 
-const widgetsById = new Map<string, TravelChecklistWidget>();
-const widgetsByUri = new Map<string, TravelChecklistWidget>();
+const widgetsById = new Map<string, WhatsItWorthWidget>();
+const widgetsByUri = new Map<string, WhatsItWorthWidget>();
 
 widgets.forEach((widget) => {
   widgetsById.set(widget.id, widget);
@@ -288,28 +276,23 @@ widgets.forEach((widget) => {
 const toolInputSchema = {
   type: "object",
   properties: {
-    destination: { type: "string", description: "Travel destination (city, country, or region)." },
-    start_date: { type: "string", description: "Trip start date in YYYY-MM-DD format (use this only if user gives exact date)." },
-    end_date: { type: "string", description: "Trip end date in YYYY-MM-DD format (use this only if user gives exact date)." },
-    trip_month: { type: "string", description: "Month of travel if user says 'in December', 'in January', etc. Use lowercase month name." },
-    departure_timing: { type: "string", enum: ["this_week", "next_week", "in_two_weeks", "in_three_weeks", "this_weekend", "next_weekend", "next_month", "in_two_months"], description: "Relative departure timing like 'going in two weeks', 'leaving next week', 'this weekend'." },
-    trip_duration: { type: "number", description: "Trip duration in days." },
-    trip_weeks: { type: "number", description: "Trip duration in weeks if user says 'for one week', 'for two weeks', etc." },
-    is_international: { type: "boolean", description: "Whether this is an international trip." },
-    climate: { type: "string", enum: ["summer", "winter", "spring", "tropical", "variable"], description: "Expected weather/climate at destination." },
-    purpose: { type: "string", enum: ["leisure", "business", "adventure", "beach", "city"], description: "Primary purpose of the trip." },
-    adult_males: { type: "number", description: "Number of adult male travelers." },
-    adult_females: { type: "number", description: "Number of adult female travelers." },
-    male_children: { type: "number", description: "Number of male children." },
-    female_children: { type: "number", description: "Number of female children." },
-    infants: { type: "number", description: "Number of infants." },
-    travelers: { type: "number", description: "Total number of travelers (if breakdown not specified, assume adult males)." },
-    packing_constraint: { type: "string", enum: ["carry_on_only", "checked_bags", "minimal"], description: "Luggage type constraint." },
-    has_children: { type: "boolean", description: "Whether traveling with children." },
-    has_infants: { type: "boolean", description: "Whether traveling with infants." },
-    has_pets: { type: "boolean", description: "Whether traveling with pets." },
-    activities: { type: "array", items: { type: "string" }, description: "Planned activities (hiking, beach, camping, etc.)." },
-    presets: { type: "array", items: { type: "string", enum: ["lightSleeper", "gymRat", "yoga", "swimmer", "remoteWorker", "contentCreator", "gamer", "photographer"] }, description: "Traveler presets - lightSleeper (mentions sleep issues, light sleeper), gymRat (gym, workout, fitness), yoga, swimmer (swimming, pool), remoteWorker (remote work, digital nomad), contentCreator (influencer, content creator, vlogger), gamer (gaming), photographer (photography)." },
+    item_name: { type: "string", description: "Name of the item to value (e.g., 'Rolex Submariner', 'Mickey Mantle rookie card')." },
+    item_description: { type: "string", description: "Description of the item including condition, year, model, unique features." },
+    category: { type: "string", enum: ["watches", "pens", "handbags", "sneakers", "jewelry", "cars", "motorcycles", "art", "sculptures", "prints", "antiques", "trading_cards", "pokemon", "mtg", "yugioh", "guitars", "vinyl", "instruments", "wine", "whiskey", "coins", "currency", "stamps", "toys", "lego", "funko", "comics", "books", "movie_props", "video_games", "sports", "golf", "cameras", "fashion", "sunglasses", "knives", "firearms", "electronics", "memorabilia", "pottery", "glass", "dolls", "other"], description: "Category of the collectible item. Choose the most specific category that matches." },
+    brand: { type: "string", description: "Brand or manufacturer (e.g., 'Omega', 'Rolex', 'Patek Philippe')." },
+    model: { type: "string", description: "Model name (e.g., 'Seamaster', 'Submariner', 'Speedmaster')." },
+    variant: { type: "string", description: "Specific variant or sub-model (e.g., 'Diver 300M', 'Professional Moonwatch', 'Date')." },
+    reference: { type: "string", description: "Reference number if visible (e.g., '210.30.42.20.03.001', '126610LN')." },
+    size_mm: { type: "number", description: "Case size in millimeters (e.g., 42, 41, 40)." },
+    dial_color: { type: "string", description: "Dial color (e.g., 'blue', 'black', 'white', 'silver', 'green')." },
+    bezel_color: { type: "string", description: "Bezel color if different from dial (e.g., 'blue', 'black', 'ceramic')." },
+    material: { type: "string", description: "Case/bracelet material (e.g., 'stainless steel', '18k gold', 'titanium', 'two-tone')." },
+    year: { type: "number", description: "Year the item was made or released." },
+    condition: { type: "string", enum: ["mint", "excellent", "good", "fair", "poor"], description: "Condition of the item." },
+    estimated_price: { type: "number", description: "Your estimated market value in USD based on the item details, condition, and current market prices. Be specific and realistic." },
+    price_range_low: { type: "number", description: "Low end of the estimated price range in USD." },
+    price_range_high: { type: "number", description: "High end of the estimated price range in USD." },
+    confidence: { type: "string", enum: ["low", "medium", "high"], description: "Your confidence in the price estimate based on how much information you have." },
   },
   required: [],
   additionalProperties: false,
@@ -317,58 +300,47 @@ const toolInputSchema = {
 } as const;
 
 const toolInputParser = z.object({
-  destination: z.string().optional(),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  trip_month: z.string().optional(),
-  departure_timing: z.enum(["this_week", "next_week", "in_two_weeks", "in_three_weeks", "this_weekend", "next_weekend", "next_month", "in_two_months"]).optional(),
-  trip_duration: z.number().optional(),
-  trip_weeks: z.number().optional(),
-  is_international: z.boolean().optional(),
-  climate: z.enum(["summer", "winter", "spring", "tropical", "variable"]).optional(),
-  purpose: z.enum(["leisure", "business", "adventure", "beach", "city"]).optional(),
-  adult_males: z.number().optional(),
-  adult_females: z.number().optional(),
-  male_children: z.number().optional(),
-  female_children: z.number().optional(),
-  infants: z.number().optional(),
-  travelers: z.number().optional(),
-  packing_constraint: z.enum(["carry_on_only", "checked_bags", "minimal"]).optional(),
-  has_children: z.boolean().optional(),
-  has_infants: z.boolean().optional(),
-  has_pets: z.boolean().optional(),
-  activities: z.array(z.string()).optional(),
-  presets: z.array(z.enum(["lightSleeper", "gymRat", "yoga", "swimmer", "remoteWorker", "contentCreator", "gamer", "photographer"])).optional(),
+  item_name: z.string().optional(),
+  item_description: z.string().optional(),
+  category: z.enum(["watches", "pens", "handbags", "sneakers", "jewelry", "cars", "motorcycles", "art", "sculptures", "prints", "antiques", "trading_cards", "pokemon", "mtg", "yugioh", "guitars", "vinyl", "instruments", "wine", "whiskey", "coins", "currency", "stamps", "toys", "lego", "funko", "comics", "books", "movie_props", "video_games", "sports", "golf", "cameras", "fashion", "sunglasses", "knives", "firearms", "electronics", "memorabilia", "pottery", "glass", "dolls", "other"]).optional(),
+  brand: z.string().optional(),
+  model: z.string().optional(),
+  variant: z.string().optional(),
+  reference: z.string().optional(),
+  size_mm: z.number().optional(),
+  dial_color: z.string().optional(),
+  bezel_color: z.string().optional(),
+  material: z.string().optional(),
+  year: z.number().optional(),
+  condition: z.enum(["mint", "excellent", "good", "fair", "poor"]).optional(),
+  estimated_price: z.number().optional(),
+  price_range_low: z.number().optional(),
+  price_range_high: z.number().optional(),
+  confidence: z.enum(["low", "medium", "high"]).optional(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this tool to generate a personalized travel packing checklist based on location, number of travelers, travel preferences, and other details. Helps users create customized packing lists based on their trip details. Call this tool immediately with NO arguments to let the user enter their trip details manually. Only provide arguments if the user has explicitly stated them.",
+    "Use this tool to find out what items are worth. Helps users get valuations for individual items or collections. Call this tool immediately with NO arguments to let the user enter their item details manually. Only provide arguments if the user has explicitly stated them.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
     properties: {
       ready: { type: "boolean" },
       timestamp: { type: "string" },
-      destination: { type: "string" },
-      trip_duration: { type: "number" },
-      is_international: { type: "boolean" },
-      climate: { type: "string" },
-      purpose: { type: "string" },
-      travelers: { type: "number" },
+      item_name: { type: "string" },
+      category: { type: "string" },
       input_source: { type: "string", enum: ["user", "default"] },
       summary: {
         type: "object",
         properties: {
-          destination: { type: ["string", "null"] },
-          trip_duration: { type: ["number", "null"] },
-          is_international: { type: ["boolean", "null"] },
-          climate: { type: ["string", "null"] },
-          purpose: { type: ["string", "null"] },
-          travelers: { type: ["number", "null"] },
-          estimated_items: { type: ["number", "null"] },
-          trip_type: { type: ["string", "null"] },
+          item_name: { type: ["string", "null"] },
+          category: { type: ["string", "null"] },
+          brand: { type: ["string", "null"] },
+          model: { type: ["string", "null"] },
+          year: { type: ["number", "null"] },
+          condition: { type: ["string", "null"] },
         },
       },
       suggested_followups: {
@@ -396,7 +368,7 @@ const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
   name: widget.title,
   description:
-    "HTML template for the Travel Checklist widget that generates personalized packing lists based on trip details.",
+    "HTML template for the What's It Worth widget that provides item valuations.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
@@ -405,18 +377,18 @@ const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
   uriTemplate: widget.templateUri,
   name: widget.title,
   description:
-    "Template descriptor for the Travel Checklist widget.",
+    "Template descriptor for the What's It Worth widget.",
   mimeType: "text/html+skybridge",
   _meta: widgetMeta(widget),
 }));
 
-function createTravelChecklistServer(): Server {
+function createWhatsItWorthServer(): Server {
   const server = new Server(
     {
-      name: "travel-checklist",
+      name: "whats-it-worth",
       version: "0.1.0",
       description:
-        "Smart Travel Checklist helps users generate personalized packing lists based on their trip profile including destination, duration, climate, and activities.",
+        "What's It Worth helps users find out what an individual item or a collection of items is worth.",
     },
     {
       capabilities: {
@@ -530,85 +502,162 @@ function createTravelChecklistServer(): Server {
           ];
           const userText = candidates.find((t) => typeof t === "string" && t.trim().length > 0) || "";
 
-          // Try to infer destination from user text (e.g., "trip to Paris", "vacation in Hawaii")
-          if (args.destination === undefined) {
-            const destMatch = userText.match(/(?:trip|travel|going|vacation|visit|flying)\s+(?:to|in)\s+([A-Za-z\s,]+?)(?:\.|,|for|\s+\d|\s*$)/i);
-            if (destMatch) {
-              args.destination = destMatch[1].trim();
+          // Infer watch brand from user text
+          if (!args.brand) {
+            const brandPatterns: [RegExp, string][] = [
+              [/\bomega\b/i, "Omega"],
+              [/\brolex\b/i, "Rolex"],
+              [/\bpatek\s*philippe\b/i, "Patek Philippe"],
+              [/\baudemars\s*piguet\b|\bap\b/i, "Audemars Piguet"],
+              [/\bcartier\b/i, "Cartier"],
+              [/\btudor\b/i, "Tudor"],
+              [/\bbreitling\b/i, "Breitling"],
+              [/\btag\s*heuer\b/i, "TAG Heuer"],
+              [/\biwc\b/i, "IWC"],
+              [/\bseiko\b/i, "Seiko"],
+              [/\bgrand\s*seiko\b/i, "Grand Seiko"],
+              [/\blongines\b/i, "Longines"],
+              [/\btissot\b/i, "Tissot"],
+              [/\bhamilton\b/i, "Hamilton"],
+              [/\bzenith\b/i, "Zenith"],
+              [/\bpanerai\b/i, "Panerai"],
+              [/\bhublot\b/i, "Hublot"],
+              [/\bvacheron\s*constantin\b/i, "Vacheron Constantin"],
+              [/\bjaeger\s*lecoultre\b|\bjlc\b/i, "Jaeger-LeCoultre"],
+            ];
+            for (const [pattern, brand] of brandPatterns) {
+              if (pattern.test(userText)) {
+                args.brand = brand;
+                break;
+              }
             }
           }
-          
-          // Try to infer trip duration (e.g., "7 days", "2 weeks", "a week")
-          if (args.trip_duration === undefined) {
-            const durationMatch = userText.match(/(\d+)\s*(?:day|night)s?/i);
-            if (durationMatch) {
-              args.trip_duration = parseInt(durationMatch[1]);
-            } else if (/a\s+week|one\s+week/i.test(userText)) {
-              args.trip_duration = 7;
-            } else if (/two\s+weeks?|2\s+weeks?/i.test(userText)) {
-              args.trip_duration = 14;
+
+          // Infer watch model from user text
+          if (!args.model) {
+            const modelPatterns: [RegExp, string][] = [
+              [/\bseamaster\b/i, "Seamaster"],
+              [/\bspeedmaster\b/i, "Speedmaster"],
+              [/\bconstellation\b/i, "Constellation"],
+              [/\bde\s*ville\b/i, "De Ville"],
+              [/\bsubmariner\b/i, "Submariner"],
+              [/\bdaytona\b/i, "Daytona"],
+              [/\bdatejust\b/i, "Datejust"],
+              [/\bgmt\s*master\b/i, "GMT-Master"],
+              [/\bexplorer\b/i, "Explorer"],
+              [/\broyal\s*oak\b/i, "Royal Oak"],
+              [/\bnautilus\b/i, "Nautilus"],
+              [/\baquanaut\b/i, "Aquanaut"],
+              [/\bsantos\b/i, "Santos"],
+              [/\btank\b/i, "Tank"],
+              [/\bblack\s*bay\b/i, "Black Bay"],
+              [/\bnavitimer\b/i, "Navitimer"],
+              [/\bcarrera\b/i, "Carrera"],
+              [/\bmonaco\b/i, "Monaco"],
+              [/\bportugieser\b/i, "Portugieser"],
+            ];
+            for (const [pattern, model] of modelPatterns) {
+              if (pattern.test(userText)) {
+                args.model = model;
+                break;
+              }
             }
           }
-          
-          // Infer international vs domestic
-          if (args.is_international === undefined) {
-            if (/international|abroad|overseas|passport/i.test(userText)) {
-              args.is_international = true;
-            } else if (/domestic|within|local/i.test(userText)) {
-              args.is_international = false;
+
+          // Infer variant from user text
+          if (!args.variant) {
+            const variantPatterns: [RegExp, string][] = [
+              [/\bdiver\s*300\s*m?\b/i, "Diver 300M"],
+              [/\bplanet\s*ocean\b/i, "Planet Ocean"],
+              [/\bprofessional\b|\bmoonwatch\b/i, "Professional Moonwatch"],
+              [/\bdate\b/i, "Date"],
+              [/\bno[\s-]*date\b/i, "No Date"],
+              [/\bchronograph\b/i, "Chronograph"],
+              [/\bgmt\b/i, "GMT"],
+              [/\bperpetual\b/i, "Perpetual"],
+            ];
+            for (const [pattern, variant] of variantPatterns) {
+              if (pattern.test(userText)) {
+                args.variant = variant;
+                break;
+              }
             }
           }
-          
-          // Infer climate from keywords
-          if (args.climate === undefined) {
-            if (/beach|tropical|caribbean|hawaii|mexico|thailand|bali/i.test(userText)) args.climate = "tropical";
-            else if (/winter|cold|snow|ski|skiing|christmas|december|january|february/i.test(userText)) args.climate = "winter";
-            else if (/summer|hot|warm|july|august|june/i.test(userText)) args.climate = "summer";
-            else if (/spring|fall|autumn|mild/i.test(userText)) args.climate = "spring";
+
+          // Infer reference number (Omega format: 210.30.42.20.03.001, Rolex format: 126610LN)
+          if (!args.reference) {
+            const omegaRef = userText.match(/\b(\d{3}\.\d{2}\.\d{2}\.\d{2}\.\d{2}\.\d{3})\b/);
+            const rolexRef = userText.match(/\b(\d{5,6}[A-Z]{0,4})\b/);
+            if (omegaRef) args.reference = omegaRef[1];
+            else if (rolexRef) args.reference = rolexRef[1];
           }
-          
-          // Infer purpose from keywords
-          if (args.purpose === undefined) {
-            if (/business|work|conference|meeting/i.test(userText)) args.purpose = "business";
-            else if (/beach|swim|ocean|resort/i.test(userText)) args.purpose = "beach";
-            else if (/hike|hiking|adventure|camping|outdoor/i.test(userText)) args.purpose = "adventure";
-            else if (/city|urban|sightseeing|museum/i.test(userText)) args.purpose = "city";
+
+          // Infer size in mm
+          if (!args.size_mm) {
+            const sizeMatch = userText.match(/\b(3[4-9]|4[0-8])\s*mm\b/i);
+            if (sizeMatch) args.size_mm = parseInt(sizeMatch[1]);
           }
-          
-          // Infer presets from keywords
-          if (!args.presets || args.presets.length === 0) {
-            const inferredPresets: ("lightSleeper" | "gymRat" | "yoga" | "swimmer" | "remoteWorker" | "contentCreator" | "gamer" | "photographer")[] = [];
-            if (/light\s*sleeper|trouble\s*sleep|insomnia|sleep\s*issues|noise\s*sensitive/i.test(userText)) inferredPresets.push("lightSleeper");
-            if (/gym|workout|fitness|exercise|weight\s*train|lift\s*weight/i.test(userText)) inferredPresets.push("gymRat");
-            if (/yoga|meditat|stretch/i.test(userText)) inferredPresets.push("yoga");
-            if (/swim|pool|lap\s*swim/i.test(userText)) inferredPresets.push("swimmer");
-            if (/remote\s*work|digital\s*nomad|work\s*remote|laptop|home\s*office/i.test(userText)) inferredPresets.push("remoteWorker");
-            if (/content\s*creat|influencer|vlog|youtube|tiktok|social\s*media/i.test(userText)) inferredPresets.push("contentCreator");
-            if (/gamer|gaming|video\s*game|nintendo|switch|playstation|xbox/i.test(userText)) inferredPresets.push("gamer");
-            if (/photograph|camera|dslr|mirrorless|shoot\s*photo/i.test(userText)) inferredPresets.push("photographer");
-            if (inferredPresets.length > 0) args.presets = inferredPresets;
-          }
-          
-          // Infer travelers from relationship mentions
-          // "with my girlfriend/wife/partner" = 1 adult male (me) + 1 adult female
-          // "with my boyfriend/husband" = 1 adult female (me) + 1 adult male
-          if (!args.adult_males && !args.adult_females && !args.travelers) {
-            if (/\b(girlfriend|wife|gf)\b/i.test(userText)) {
-              // User is likely male, traveling with female partner
-              args.adult_males = 1;
-              args.adult_females = 1;
-            } else if (/\b(boyfriend|husband|bf)\b/i.test(userText)) {
-              // User is likely female, traveling with male partner
-              args.adult_females = 1;
-              args.adult_males = 1;
-            } else if (/\b(partner|spouse)\b/i.test(userText)) {
-              // Gender-neutral, assume 1 male + 1 female
-              args.adult_males = 1;
-              args.adult_females = 1;
-            } else if (/\bfor\s+(?:me|myself)\b/i.test(userText) && !(/\bwith\b/i.test(userText))) {
-              // Solo traveler - "for me", "for myself" without "with"
-              args.adult_males = 1;
+
+          // Infer dial color
+          if (!args.dial_color) {
+            const colorPatterns: [RegExp, string][] = [
+              [/\bblue\s*dial\b/i, "blue"],
+              [/\bblack\s*dial\b/i, "black"],
+              [/\bwhite\s*dial\b/i, "white"],
+              [/\bsilver\s*dial\b/i, "silver"],
+              [/\bgreen\s*dial\b/i, "green"],
+              [/\bgold\s*dial\b/i, "gold"],
+              [/\bchampagne\s*dial\b/i, "champagne"],
+              [/\bgray\s*dial\b|\bgrey\s*dial\b/i, "gray"],
+            ];
+            for (const [pattern, color] of colorPatterns) {
+              if (pattern.test(userText)) {
+                args.dial_color = color;
+                break;
+              }
             }
+            // Fallback: just "blue", "black" etc. without "dial"
+            if (!args.dial_color) {
+              if (/\bblue\b/i.test(userText)) args.dial_color = "blue";
+              else if (/\bblack\b/i.test(userText)) args.dial_color = "black";
+              else if (/\bwhite\b/i.test(userText)) args.dial_color = "white";
+              else if (/\bgreen\b/i.test(userText)) args.dial_color = "green";
+            }
+          }
+
+          // Infer material
+          if (!args.material) {
+            if (/\bstainless\s*steel\b|\bsteel\b/i.test(userText)) args.material = "stainless steel";
+            else if (/\b18k\s*gold\b|\byellow\s*gold\b/i.test(userText)) args.material = "18k yellow gold";
+            else if (/\bwhite\s*gold\b/i.test(userText)) args.material = "18k white gold";
+            else if (/\brose\s*gold\b/i.test(userText)) args.material = "18k rose gold";
+            else if (/\btwo[\s-]*tone\b/i.test(userText)) args.material = "two-tone";
+            else if (/\btitanium\b/i.test(userText)) args.material = "titanium";
+            else if (/\bceramic\b/i.test(userText)) args.material = "ceramic";
+          }
+
+          // Infer category if not set
+          if (!args.category) {
+            if (/\bwatch\b|\btimepiece\b|\bwristwatch\b/i.test(userText)) args.category = "watches";
+            else if (/\bcar\b|\bvehicle\b|\bautomobile\b/i.test(userText)) args.category = "cars";
+            else if (/\bjewelry\b|\bring\b|\bnecklace\b|\bbracelet\b|\bearring/i.test(userText)) args.category = "jewelry";
+            else if (/\bpainting\b|\bart\b|\bsculpture\b/i.test(userText)) args.category = "art";
+            else if (/\bcard\b|\bbaseball\b|\bsports\b|\bmemorabilia\b/i.test(userText)) args.category = "sports";
+          }
+
+          // Infer year
+          if (!args.year) {
+            const yearMatch = userText.match(/\b(19[5-9]\d|20[0-2]\d)\b/);
+            if (yearMatch) args.year = parseInt(yearMatch[1]);
+          }
+
+          // Infer condition
+          if (!args.condition) {
+            if (/\bmint\b|\bnew\s*in\s*box\b|\bnib\b|\bunworn\b/i.test(userText)) args.condition = "mint";
+            else if (/\bexcellent\b|\blike\s*new\b/i.test(userText)) args.condition = "excellent";
+            else if (/\bgood\b|\bused\b/i.test(userText)) args.condition = "good";
+            else if (/\bfair\b|\bworn\b/i.test(userText)) args.condition = "fair";
+            else if (/\bpoor\b|\bdamaged\b|\bbroken\b/i.test(userText)) args.condition = "poor";
           }
 
         } catch (e) {
@@ -623,15 +672,16 @@ function createTravelChecklistServer(): Server {
 
         // Infer likely user query from parameters
         const inferredQuery = [] as string[];
-        if (args.destination) inferredQuery.push(`Destination: ${args.destination}`);
-        if (args.trip_duration) inferredQuery.push(`Duration: ${args.trip_duration} days`);
-        if (args.purpose) inferredQuery.push(`Purpose: ${args.purpose}`);
-        if (args.climate) inferredQuery.push(`Climate: ${args.climate}`);
+        if (args.brand) inferredQuery.push(`Brand: ${args.brand}`);
+        if (args.model) inferredQuery.push(`Model: ${args.model}`);
+        if (args.variant) inferredQuery.push(`Variant: ${args.variant}`);
+        if (args.reference) inferredQuery.push(`Ref: ${args.reference}`);
+        if (args.category) inferredQuery.push(`Category: ${args.category}`);
 
         logAnalytics("tool_call_success", {
           toolName: request.params.name,
           params: args,
-          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "Travel Checklist",
+          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "What's It Worth",
           responseTime,
 
           device: deviceCategory,
@@ -652,7 +702,7 @@ function createTravelChecklistServer(): Server {
         console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
 
         // Build structured content once so we can log it and return it.
-        // For the travel checklist, expose fields relevant to trip details
+        // For the valuation widget, expose fields relevant to item details
         const structured = {
           ready: true,
           timestamp: new Date().toISOString(),
@@ -661,10 +711,10 @@ function createTravelChecklistServer(): Server {
           // Summary + follow-ups for natural language UX
           summary: computeSummary(args),
           suggested_followups: [
-            "What documents do I need?",
-            "What clothes should I pack?",
-            "Do I need any vaccines?",
-            "What about toiletries for carry-on?"
+            "How did you determine this value?",
+            "Where can I sell this item?",
+            "What affects the price the most?",
+            "Is now a good time to sell?"
           ],
         } as const;
 
@@ -687,14 +737,14 @@ function createTravelChecklistServer(): Server {
 
         // Log success analytics
         try {
-          // Check for "empty" result - when no main travel inputs are provided
-          const hasMainInputs = args.destination || args.trip_duration || args.purpose;
+          // Check for "empty" result - when no main item inputs are provided
+          const hasMainInputs = args.brand || args.model || args.item_name || args.category;
           
           if (!hasMainInputs) {
              logAnalytics("tool_call_empty", {
                toolName: request.params.name,
                params: request.params.arguments || {},
-               reason: "No trip details provided"
+               reason: "No item details provided"
              });
           } else {
           logAnalytics("tool_call_success", {
@@ -1000,7 +1050,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Travel Checklist Analytics</title>
+  <title>What's It Worth Analytics</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; padding: 20px; }
@@ -1027,7 +1077,7 @@ function generateAnalyticsDashboard(logs: AnalyticsEvent[], alerts: AlertEntry[]
 </head>
 <body>
   <div class="container">
-    <h1>📊 Travel Checklist Analytics</h1>
+    <h1>📊 What's It Worth Analytics</h1>
     <p class="subtitle">Last 7 days • Auto-refresh every 60s</p>
     
     <div class="grid">
@@ -1353,7 +1403,7 @@ async function subscribeToButtondown(email: string, topicId: string, topicName: 
 
   const metadata: Record<string, any> = {
     topicName,
-    source: "travel-checklist",
+    source: "whats-it-worth",
     subscribedAt: new Date().toISOString(),
   };
 
@@ -1443,7 +1493,7 @@ async function updateButtondownSubscriber(email: string, topicId: string, topicN
   const updatedMetadata = {
     ...existingMetadata,
     [topicKey]: topicData,
-    source: "travel-checklist",
+    source: "whats-it-worth",
   };
 
   const updateRequestBody = {
@@ -1498,8 +1548,8 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
     // Support both old (settlementId/settlementName) and new (topicId/topicName) field names
     const parsed = JSON.parse(body);
     const email = parsed.email;
-    const topicId = parsed.topicId || parsed.settlementId || "travel-checklist";
-    const topicName = parsed.topicName || parsed.settlementName || "Travel Checklist Updates";
+    const topicId = parsed.topicId || parsed.settlementId || "whats-it-worth";
+    const topicName = parsed.topicName || parsed.settlementName || "What's It Worth Updates";
     if (!email || !email.includes("@")) {
       res.writeHead(400).end(JSON.stringify({ error: "Invalid email address" }));
       return;
@@ -1515,7 +1565,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
       await subscribeToButtondown(email, topicId, topicName);
       res.writeHead(200).end(JSON.stringify({ 
         success: true, 
-        message: "Successfully subscribed! You'll receive travel tips and packing list updates." 
+        message: "Successfully subscribed! You'll receive valuation tips and updates." 
       }));
     } catch (subscribeError: any) {
       const rawMessage = String(subscribeError?.message ?? "").trim();
@@ -1573,7 +1623,7 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
 async function handleSseRequest(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  const server = createTravelChecklistServer();
+  const server = createWhatsItWorthServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 
@@ -1693,8 +1743,8 @@ const httpServer = createServer(
     }
 
     // Serve alias for legacy loader path -> our main widget HTML
-    if (req.method === "GET" && url.pathname === "/assets/travel-checklist.html") {
-      const mainAssetPath = path.join(ASSETS_DIR, "travel-checklist.html");
+    if (req.method === "GET" && url.pathname === "/assets/whats-it-worth.html") {
+      const mainAssetPath = path.join(ASSETS_DIR, "whats-it-worth.html");
       console.log(`[Debug Legacy] Request: ${url.pathname}, Main Path: ${mainAssetPath}, Exists: ${fs.existsSync(mainAssetPath)}`);
       if (fs.existsSync(mainAssetPath) && fs.statSync(mainAssetPath).isFile()) {
         res.writeHead(200, {
@@ -1766,7 +1816,7 @@ function startMonitoring() {
 
 httpServer.listen(port, () => {
   startMonitoring();
-  console.log(`Travel Checklist MCP server listening on http://localhost:${port}`);
+  console.log(`What's It Worth MCP server listening on http://localhost:${port}`);
   console.log(`  SSE stream: GET http://localhost:${port}${ssePath}`);
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`

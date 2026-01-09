@@ -1,14 +1,14 @@
 {
-  "name": "travel-checklist-mcp-node",
+  "name": "whats-it-worth-mcp-node",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "Smart Travel Checklist — generate personalized, customizable packing lists based on your trip profile.",
+  "description": "What's It Worth — find out what an individual item or a collection of items is worth.",
   "keywords": [
-    "travel checklist",
-    "packing list",
-    "travel planner",
-    "vacation"
+    "whats it worth",
+    "item value",
+    "appraisal",
+    "valuation"
   ],
   "scripts": {
     "start": "tsx src/server.ts",

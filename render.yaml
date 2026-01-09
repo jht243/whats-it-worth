@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: crypto-portfolio-optimizer
+    name: whats-it-worth
     env: node
     plan: free
     region: oregon
