@@ -1608,7 +1608,8 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
     container: { 
       width: "100%", maxWidth: 600, margin: "0 auto", 
       backgroundColor: COLORS.bg, fontFamily: "'Inter', sans-serif", 
-      padding: 20, boxSizing: "border-box" as const
+      padding: 20, boxSizing: "border-box" as const,
+      border: "1px solid #E5E7EB", borderRadius: 12
     },
     card: { 
       backgroundColor: COLORS.card, borderRadius: 20, padding: 20, 

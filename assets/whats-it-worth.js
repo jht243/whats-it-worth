@@ -26114,7 +26114,9 @@ function WhatsItWorth({ initialData: initialData2 }) {
       backgroundColor: COLORS.bg,
       fontFamily: "'Inter', sans-serif",
       padding: 20,
-      boxSizing: "border-box"
+      boxSizing: "border-box",
+      border: "1px solid #E5E7EB",
+      borderRadius: 12
     },
     card: {
       backgroundColor: COLORS.card,
