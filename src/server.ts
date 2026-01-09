@@ -996,7 +996,7 @@ const healthPath = "/health";
 const domainVerificationPath = "/.well-known/openai-apps-challenge";
 const domainVerificationToken =
   process.env.OPENAI_DOMAIN_VERIFICATION_TOKEN ??
-  "X1C2u_pL7rpRTEqXIorF7SPz-yc1ucHWvuIoUEEYwQE";
+  "6LTuLChN9lEicoGfVOuBS0ba38KfDKy3pCVz2WpP16U";
 
 const ANALYTICS_PASSWORD = process.env.ANALYTICS_PASSWORD || "changeme123";
 
