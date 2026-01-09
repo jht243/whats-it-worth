@@ -4,8 +4,8 @@ services:
     env: node
     plan: free
     region: oregon
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: npm install -g pnpm && pnpm install && cd web && pnpm install && cd .. && pnpm run build
+    startCommand: pnpm start
     autoDeploy: true
     healthCheckPath: /health
     envVars:
@@ -14,8 +14,6 @@ services:
       # Optional: set a password to gate the analytics dashboard
       - key: ANALYTICS_PASSWORD
         sync: false
-      # Optional: provide a FRED API key to show live mortgage rates in the widget badge
-      - key: FRED_API_KEY
+      # Optional: Buttondown API key for email subscriptions
+      - key: BUTTONDOWN_API_KEY
         sync: false
-      - key: FRED_SERIES_ID
-        value: MORTGAGE30US
