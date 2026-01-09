@@ -416,8 +416,6 @@ function createWhatsItWorthServer(): Server {
         throw new Error(`Unknown resource: ${request.params.uri}`);
       }
 
-      // Inject current FRED rate into HTML before sending to ChatGPT
-      // (Logic removed for yield optimizer)
       const htmlToSend = widget.html;
 
       return {
@@ -488,7 +486,7 @@ function createWhatsItWorthServer(): Server {
         // Debug log
         console.log("Captured meta:", { userLocation, userLocale, userAgent });
 
-        // If ChatGPT didn't pass structured arguments, try to infer travel details from freeform text in meta
+        // If ChatGPT didn't pass structured arguments, try to infer item details from freeform text in meta
         try {
           const candidates: any[] = [
             meta["openai/subject"],
@@ -892,7 +890,7 @@ function evaluateAlerts(logs: AnalyticsEvent[]): AlertEntry[] {
     });
   }
 
-  // 3. Empty Result Sets (or equivalent for calculator - e.g. missing inputs)
+  // 3. Empty Result Sets (missing item inputs)
   const successCalls = logs.filter(
     (l) => l.event === "tool_call_success" && new Date(l.timestamp).getTime() >= weekAgo
   );
