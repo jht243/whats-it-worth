@@ -725,16 +725,117 @@ function createWhatsItWorthServer(): Server {
             }
           }
 
+          // Infer sports card player names as "brand" (player name)
+          if (!args.brand) {
+            const playerPatterns: [RegExp, string][] = [
+              // Basketball
+              [/\blebron\s*james\b|\blebron\b/i, "LeBron James"],
+              [/\bmichael\s*jordan\b|\bmj\b/i, "Michael Jordan"],
+              [/\bkobe\s*bryant\b|\bkobe\b/i, "Kobe Bryant"],
+              [/\bsteph\s*curry\b|\bstephen\s*curry\b|\bcurry\b/i, "Stephen Curry"],
+              [/\bkevin\s*durant\b|\bkd\b/i, "Kevin Durant"],
+              [/\bshaq\b|\bshaquille\s*o'?neal\b/i, "Shaquille O'Neal"],
+              [/\bgiannis\b|\bantetokounmpo\b/i, "Giannis Antetokounmpo"],
+              [/\bluka\s*doncic\b|\bluka\b/i, "Luka Doncic"],
+              [/\bvictor\s*wembanyama\b|\bwemby\b/i, "Victor Wembanyama"],
+              // Baseball
+              [/\bmickey\s*mantle\b/i, "Mickey Mantle"],
+              [/\bbabe\s*ruth\b/i, "Babe Ruth"],
+              [/\bderek\s*jeter\b|\bjeter\b/i, "Derek Jeter"],
+              [/\bmike\s*trout\b|\btrout\b/i, "Mike Trout"],
+              [/\bshohei\s*ohtani\b|\bohtani\b/i, "Shohei Ohtani"],
+              [/\bken\s*griffey\b|\bgriffey\s*jr\b/i, "Ken Griffey Jr."],
+              [/\bwillie\s*mays\b/i, "Willie Mays"],
+              [/\bjackie\s*robinson\b/i, "Jackie Robinson"],
+              // Football
+              [/\btom\s*brady\b|\bbrady\b/i, "Tom Brady"],
+              [/\bpatrick\s*mahomes\b|\bmahomes\b/i, "Patrick Mahomes"],
+              [/\bjoe\s*burrow\b|\bburrow\b/i, "Joe Burrow"],
+              [/\bjosh\s*allen\b/i, "Josh Allen"],
+              [/\bjerry\s*rice\b/i, "Jerry Rice"],
+              [/\bpeyton\s*manning\b/i, "Peyton Manning"],
+              // Soccer
+              [/\bmessi\b|\blionel\s*messi\b/i, "Lionel Messi"],
+              [/\bronaldo\b|\bcristiano\s*ronaldo\b/i, "Cristiano Ronaldo"],
+              // Hockey
+              [/\bwayne\s*gretzky\b|\bgretzky\b/i, "Wayne Gretzky"],
+              [/\bconnor\s*mcdavid\b|\bmcdavid\b/i, "Connor McDavid"],
+            ];
+            for (const [pattern, player] of playerPatterns) {
+              if (pattern.test(userText)) {
+                args.brand = player;
+                break;
+              }
+            }
+          }
+
+          // Infer card type/variant as "model"
+          if (!args.model) {
+            const cardTypePatterns: [RegExp, string][] = [
+              [/\brookie\s*card\b|\brookie\b/i, "Rookie Card"],
+              [/\bprizm\b/i, "Prizm"],
+              [/\btopps\s*chrome\b/i, "Topps Chrome"],
+              [/\btopps\b/i, "Topps"],
+              [/\bpanini\b/i, "Panini"],
+              [/\bupper\s*deck\b/i, "Upper Deck"],
+              [/\bfleer\b/i, "Fleer"],
+              [/\bdonruss\b/i, "Donruss"],
+              [/\bbowman\b/i, "Bowman"],
+              [/\bselect\b/i, "Select"],
+              [/\bmosaic\b/i, "Mosaic"],
+              [/\boptic\b/i, "Optic"],
+              [/\bnational\s*treasures\b/i, "National Treasures"],
+              [/\bimmaculate\b/i, "Immaculate"],
+              [/\bauto\b|\bautograph\b|\bsigned\b/i, "Autograph"],
+              [/\bpatch\b/i, "Patch Card"],
+              [/\brefractor\b/i, "Refractor"],
+              [/\bnumbered\b|\b\/\d+\b/i, "Numbered"],
+            ];
+            for (const [pattern, cardType] of cardTypePatterns) {
+              if (pattern.test(userText)) {
+                args.model = cardType;
+                break;
+              }
+            }
+          }
+
+          // Infer card grade as "variant" 
+          if (!args.variant) {
+            const gradePatterns: [RegExp, string][] = [
+              [/\bpsa\s*10\b|\bgem\s*mint\b/i, "PSA 10 Gem Mint"],
+              [/\bpsa\s*9\b/i, "PSA 9 Mint"],
+              [/\bpsa\s*8\b/i, "PSA 8 NM-MT"],
+              [/\bpsa\s*7\b/i, "PSA 7 NM"],
+              [/\bbgs\s*10\b|\bpristine\b/i, "BGS 10 Pristine"],
+              [/\bbgs\s*9\.5\b/i, "BGS 9.5 Gem Mint"],
+              [/\bbgs\s*9\b/i, "BGS 9 Mint"],
+              [/\bcgc\s*10\b/i, "CGC 10"],
+              [/\bcgc\s*9\.8\b/i, "CGC 9.8"],
+              [/\bgrade\s*a\b|\bgraded\s*a\b/i, "Grade A"],
+              [/\bgrade\s*b\b|\bgraded\s*b\b/i, "Grade B"],
+              [/\bgrade\s*c\b|\bgraded\s*c\b/i, "Grade C"],
+              [/\braw\b|\bungraded\b/i, "Raw/Ungraded"],
+            ];
+            for (const [pattern, grade] of gradePatterns) {
+              if (pattern.test(userText)) {
+                args.variant = grade;
+                break;
+              }
+            }
+          }
+
           // Infer category if not set
           if (!args.category) {
-            // Check for car brands/models first to set cars category
-            const carIndicators = /\bmustang\b|\bcamaro\b|\bcorvette\b|\b911\b|\bferrari\b|\blamborghini\b|\bporsche\b|\bford\b|\bchevy\b|\bdodge\b|\btesla\b|\bbmw\b|\bmercedes\b|\baudi\b/i;
-            if (carIndicators.test(userText)) args.category = "cars";
+            // Check for sports cards first
+            const sportsCardIndicators = /\brookie\s*card\b|\bcard\b.*\b(lebron|jordan|kobe|brady|trout|ohtani|messi|gretzky|mantle|ruth)\b|\b(lebron|jordan|kobe|brady|trout|ohtani|messi|gretzky|mantle|ruth)\b.*\bcard\b|\bpsa\b|\bbgs\b|\btopps\b|\bpanini\b|\bprizm\b/i;
+            if (sportsCardIndicators.test(userText)) args.category = "trading_cards";
+            // Check for car brands/models
+            else if (/\bmustang\b|\bcamaro\b|\bcorvette\b|\b911\b|\bferrari\b|\blamborghini\b|\bporsche\b|\bford\b|\bchevy\b|\bdodge\b|\btesla\b|\bbmw\b|\bmercedes\b|\baudi\b/i.test(userText)) args.category = "cars";
             else if (/\bwatch\b|\btimepiece\b|\bwristwatch\b|\brolex\b|\bomega\b|\bpatek\b|\baudemars\b|\bcartier\b/i.test(userText)) args.category = "watches";
             else if (/\bcar\b|\bvehicle\b|\bautomobile\b/i.test(userText)) args.category = "cars";
             else if (/\bjewelry\b|\bring\b|\bnecklace\b|\bbracelet\b|\bearring/i.test(userText)) args.category = "jewelry";
             else if (/\bpainting\b|\bart\b|\bsculpture\b/i.test(userText)) args.category = "art";
-            else if (/\bcard\b|\bbaseball\b|\bsports\b|\bmemorabilia\b/i.test(userText)) args.category = "sports";
+            else if (/\bcard\b|\bbaseball\b|\bsports\b|\bmemorabilia\b/i.test(userText)) args.category = "trading_cards";
             else if (/\bsneaker\b|\bjordan\b|\byeezy\b|\bnike\b|\badidas\b/i.test(userText)) args.category = "sneakers";
             else if (/\bhandbag\b|\bpurse\b|\bbirkin\b|\bkelly\b|\bchanel\b|\blouis\s*vuitton\b|\blv\b|\bhermes\b/i.test(userText)) args.category = "handbags";
             else if (/\bguitar\b|\bfender\b|\bgibson\b|\bmartin\b/i.test(userText)) args.category = "guitars";
@@ -747,12 +848,12 @@ function createWhatsItWorthServer(): Server {
             if (yearMatch) args.year = parseInt(yearMatch[1]);
           }
 
-          // Infer condition
+          // Infer condition (also handle card grades as condition)
           if (!args.condition) {
-            if (/\bmint\b|\bnew\s*in\s*box\b|\bnib\b|\bunworn\b/i.test(userText)) args.condition = "mint";
-            else if (/\bexcellent\b|\blike\s*new\b/i.test(userText)) args.condition = "excellent";
-            else if (/\bgood\b|\bused\b/i.test(userText)) args.condition = "good";
-            else if (/\bfair\b|\bworn\b/i.test(userText)) args.condition = "fair";
+            if (/\bmint\b|\bnew\s*in\s*box\b|\bnib\b|\bunworn\b|\bpsa\s*10\b|\bbgs\s*10\b|\bgem\s*mint\b/i.test(userText)) args.condition = "mint";
+            else if (/\bexcellent\b|\blike\s*new\b|\bpsa\s*9\b|\bbgs\s*9\b|\bgrade\s*a\b/i.test(userText)) args.condition = "excellent";
+            else if (/\bgood\b|\bused\b|\bpsa\s*[78]\b|\bgrade\s*b\b/i.test(userText)) args.condition = "good";
+            else if (/\bfair\b|\bworn\b|\bgrade\s*c\b/i.test(userText)) args.condition = "fair";
             else if (/\bpoor\b|\bdamaged\b|\bbroken\b/i.test(userText)) args.condition = "poor";
           }
 
