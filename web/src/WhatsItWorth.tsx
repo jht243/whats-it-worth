@@ -1209,6 +1209,112 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
     });
   }, []);
 
+  // Auto-hydration: Create item and navigate to it when initialData has specific info
+  const [hasHydrated, setHasHydrated] = useState(false);
+  useEffect(() => {
+    if (hasHydrated) return;
+    if (!initialData) return;
+    
+    // Check if we have enough specific information to auto-create an item
+    // Need at least brand+model, or a specific item_name with pricing
+    const hasBrandModel = initialData.brand && initialData.model;
+    const hasSpecificItem = initialData.item_name && initialData.estimated_price;
+    const hasEnoughInfo = hasBrandModel || hasSpecificItem;
+    
+    if (!hasEnoughInfo) {
+      console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
+      setHasHydrated(true);
+      return;
+    }
+
+    console.log("[Hydration] Auto-creating item from initialData:", initialData);
+    setHasHydrated(true);
+
+    // Build item name from available data
+    const itemName = [initialData.brand, initialData.model, initialData.variant]
+      .filter(Boolean)
+      .join(" ") || initialData.item_name || "Unknown Item";
+
+    // Determine category
+    const category = initialData.category || detectCategory(itemName + " " + (initialData.item_description || ""));
+
+    // Build metadata
+    const metadata: ItemMetadata = {
+      brand: initialData.brand,
+      model: initialData.model,
+      variant: initialData.variant,
+      reference: initialData.reference,
+      size_mm: initialData.size_mm,
+      dial_color: initialData.dial_color,
+      bezel_color: initialData.bezel_color,
+      material: initialData.material,
+      year: initialData.year,
+      condition: initialData.condition,
+    };
+
+    // Use ChatGPT's price estimate or generate mock valuation
+    const mockValuation = generateMockValuation(itemName, initialData.item_description || "", category);
+    const estimatedValue = initialData.estimated_price || mockValuation.estimatedValue;
+    const valueRange = initialData.estimated_price
+      ? {
+          low: initialData.price_range_low || Math.floor(initialData.estimated_price * 0.85),
+          high: initialData.price_range_high || Math.floor(initialData.estimated_price * 1.15),
+        }
+      : mockValuation.valueRange;
+    const confidence = (initialData.confidence || mockValuation.confidence) as "low" | "medium" | "high";
+
+    // Create the item
+    const newItem: Item = ensureItemPriceSources({
+      id: `item-${Date.now()}`,
+      name: itemName,
+      description: initialData.item_description || `${itemName} - ${initialData.condition || "good"} condition`,
+      category,
+      estimatedValue,
+      valueRange,
+      confidence,
+      metadata,
+      priceSources: [],
+      priceHistory: [{ date: new Date().toISOString().split("T")[0], value: estimatedValue }],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // Find or create vault for this category
+    setAppData((prev) => {
+      let vault = getVaultForCategory(prev.vaults, category);
+      let updatedVaults = [...prev.vaults];
+
+      if (!vault) {
+        vault = createVaultForCategory(category);
+        updatedVaults.push(vault);
+      }
+
+      // Add item to vault
+      const vaultIndex = updatedVaults.findIndex((v) => v.id === vault!.id);
+      updatedVaults[vaultIndex] = {
+        ...updatedVaults[vaultIndex],
+        itemIds: [...updatedVaults[vaultIndex].itemIds, newItem.id],
+      };
+
+      return {
+        ...prev,
+        items: [...prev.items, newItem],
+        vaults: updatedVaults,
+      };
+    });
+
+    // Navigate to show the new item
+    setSelectedItemId(newItem.id);
+    setView("item");
+
+    trackEvent("hydration_auto_create", { 
+      category, 
+      value: estimatedValue,
+      hasBrandModel: !!hasBrandModel,
+      hasPrice: !!initialData.estimated_price 
+    });
+  }, [initialData, hasHydrated]);
+
   // Calculate totals
   const totalPortfolioValue = useMemo(() => {
     return appData.items.reduce((sum, item) => sum + item.estimatedValue, 0);

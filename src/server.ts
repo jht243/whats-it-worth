@@ -632,13 +632,113 @@ function createWhatsItWorthServer(): Server {
             else if (/\bceramic\b/i.test(userText)) args.material = "ceramic";
           }
 
+          // Infer car brands/models if not set
+          if (!args.brand) {
+            const carBrandPatterns: [RegExp, string][] = [
+              [/\bford\b/i, "Ford"],
+              [/\bchevy\b|\bchevrolet\b/i, "Chevrolet"],
+              [/\bdodge\b/i, "Dodge"],
+              [/\bferrari\b/i, "Ferrari"],
+              [/\blamborghini\b/i, "Lamborghini"],
+              [/\bporsche\b/i, "Porsche"],
+              [/\bmercedes\b|\bmercedes[\s-]*benz\b/i, "Mercedes-Benz"],
+              [/\bbmw\b/i, "BMW"],
+              [/\baudi\b/i, "Audi"],
+              [/\btoyota\b/i, "Toyota"],
+              [/\bhonda\b/i, "Honda"],
+              [/\bnissan\b/i, "Nissan"],
+              [/\baston\s*martin\b/i, "Aston Martin"],
+              [/\bmaserati\b/i, "Maserati"],
+              [/\bbugatti\b/i, "Bugatti"],
+              [/\brolls[\s-]*royce\b/i, "Rolls-Royce"],
+              [/\bbentley\b/i, "Bentley"],
+              [/\bjaguar\b/i, "Jaguar"],
+              [/\bland\s*rover\b/i, "Land Rover"],
+              [/\btesla\b/i, "Tesla"],
+            ];
+            for (const [pattern, brand] of carBrandPatterns) {
+              if (pattern.test(userText)) {
+                args.brand = brand;
+                break;
+              }
+            }
+          }
+
+          // Infer car models
+          if (!args.model) {
+            const carModelPatterns: [RegExp, string][] = [
+              [/\bmustang\b/i, "Mustang"],
+              [/\bcamaro\b/i, "Camaro"],
+              [/\bcorvette\b/i, "Corvette"],
+              [/\bchallenger\b/i, "Challenger"],
+              [/\bcharger\b/i, "Charger"],
+              [/\b911\b/i, "911"],
+              [/\bcayenne\b/i, "Cayenne"],
+              [/\bmodel\s*s\b/i, "Model S"],
+              [/\bmodel\s*3\b/i, "Model 3"],
+              [/\bmodel\s*x\b/i, "Model X"],
+              [/\bmodel\s*y\b/i, "Model Y"],
+              [/\bcivic\b/i, "Civic"],
+              [/\baccord\b/i, "Accord"],
+              [/\bcamry\b/i, "Camry"],
+              [/\bsupra\b/i, "Supra"],
+              [/\bm3\b/i, "M3"],
+              [/\bm5\b/i, "M5"],
+              [/\bg[\s-]*wagon\b|\bg[\s-]*class\b/i, "G-Class"],
+              [/\bf150\b|\bf-150\b/i, "F-150"],
+              [/\bsilverado\b/i, "Silverado"],
+            ];
+            for (const [pattern, model] of carModelPatterns) {
+              if (pattern.test(userText)) {
+                args.model = model;
+                break;
+              }
+            }
+          }
+
+          // Infer car variant/trim
+          if (!args.variant) {
+            const carVariantPatterns: [RegExp, string][] = [
+              [/\bgt\b/i, "GT"],
+              [/\bgt350\b/i, "GT350"],
+              [/\bgt500\b/i, "GT500"],
+              [/\bss\b/i, "SS"],
+              [/\bzl1\b/i, "ZL1"],
+              [/\bz06\b/i, "Z06"],
+              [/\bzr1\b/i, "ZR1"],
+              [/\bhellcat\b/i, "Hellcat"],
+              [/\bsrt\b/i, "SRT"],
+              [/\bamg\b/i, "AMG"],
+              [/\bm\s*sport\b/i, "M Sport"],
+              [/\bs[\s-]*line\b/i, "S-Line"],
+              [/\btype[\s-]*r\b/i, "Type R"],
+              [/\btrd\b/i, "TRD"],
+              [/\bnismo\b/i, "NISMO"],
+              [/\bturbo\b/i, "Turbo"],
+              [/\bturbo\s*s\b/i, "Turbo S"],
+            ];
+            for (const [pattern, variant] of carVariantPatterns) {
+              if (pattern.test(userText)) {
+                args.variant = variant;
+                break;
+              }
+            }
+          }
+
           // Infer category if not set
           if (!args.category) {
-            if (/\bwatch\b|\btimepiece\b|\bwristwatch\b/i.test(userText)) args.category = "watches";
+            // Check for car brands/models first to set cars category
+            const carIndicators = /\bmustang\b|\bcamaro\b|\bcorvette\b|\b911\b|\bferrari\b|\blamborghini\b|\bporsche\b|\bford\b|\bchevy\b|\bdodge\b|\btesla\b|\bbmw\b|\bmercedes\b|\baudi\b/i;
+            if (carIndicators.test(userText)) args.category = "cars";
+            else if (/\bwatch\b|\btimepiece\b|\bwristwatch\b|\brolex\b|\bomega\b|\bpatek\b|\baudemars\b|\bcartier\b/i.test(userText)) args.category = "watches";
             else if (/\bcar\b|\bvehicle\b|\bautomobile\b/i.test(userText)) args.category = "cars";
             else if (/\bjewelry\b|\bring\b|\bnecklace\b|\bbracelet\b|\bearring/i.test(userText)) args.category = "jewelry";
             else if (/\bpainting\b|\bart\b|\bsculpture\b/i.test(userText)) args.category = "art";
             else if (/\bcard\b|\bbaseball\b|\bsports\b|\bmemorabilia\b/i.test(userText)) args.category = "sports";
+            else if (/\bsneaker\b|\bjordan\b|\byeezy\b|\bnike\b|\badidas\b/i.test(userText)) args.category = "sneakers";
+            else if (/\bhandbag\b|\bpurse\b|\bbirkin\b|\bkelly\b|\bchanel\b|\blouis\s*vuitton\b|\blv\b|\bhermes\b/i.test(userText)) args.category = "handbags";
+            else if (/\bguitar\b|\bfender\b|\bgibson\b|\bmartin\b/i.test(userText)) args.category = "guitars";
+            else if (/\bpen\b|\bmontblanc\b|\bparker\b|\bwaterman\b/i.test(userText)) args.category = "pens";
           }
 
           // Infer year

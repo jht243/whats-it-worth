@@ -25796,6 +25796,82 @@ function WhatsItWorth({ initialData: initialData2 }) {
       return changed ? { ...prev, items: nextItems } : prev;
     });
   }, []);
+  const [hasHydrated, setHasHydrated] = (0, import_react3.useState)(false);
+  (0, import_react3.useEffect)(() => {
+    if (hasHydrated) return;
+    if (!initialData2) return;
+    const hasBrandModel = initialData2.brand && initialData2.model;
+    const hasSpecificItem = initialData2.item_name && initialData2.estimated_price;
+    const hasEnoughInfo = hasBrandModel || hasSpecificItem;
+    if (!hasEnoughInfo) {
+      console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
+      setHasHydrated(true);
+      return;
+    }
+    console.log("[Hydration] Auto-creating item from initialData:", initialData2);
+    setHasHydrated(true);
+    const itemName = [initialData2.brand, initialData2.model, initialData2.variant].filter(Boolean).join(" ") || initialData2.item_name || "Unknown Item";
+    const category = initialData2.category || detectCategory(itemName + " " + (initialData2.item_description || ""));
+    const metadata = {
+      brand: initialData2.brand,
+      model: initialData2.model,
+      variant: initialData2.variant,
+      reference: initialData2.reference,
+      size_mm: initialData2.size_mm,
+      dial_color: initialData2.dial_color,
+      bezel_color: initialData2.bezel_color,
+      material: initialData2.material,
+      year: initialData2.year,
+      condition: initialData2.condition
+    };
+    const mockValuation = generateMockValuation(itemName, initialData2.item_description || "", category);
+    const estimatedValue = initialData2.estimated_price || mockValuation.estimatedValue;
+    const valueRange = initialData2.estimated_price ? {
+      low: initialData2.price_range_low || Math.floor(initialData2.estimated_price * 0.85),
+      high: initialData2.price_range_high || Math.floor(initialData2.estimated_price * 1.15)
+    } : mockValuation.valueRange;
+    const confidence = initialData2.confidence || mockValuation.confidence;
+    const newItem = ensureItemPriceSources({
+      id: `item-${Date.now()}`,
+      name: itemName,
+      description: initialData2.item_description || `${itemName} - ${initialData2.condition || "good"} condition`,
+      category,
+      estimatedValue,
+      valueRange,
+      confidence,
+      metadata,
+      priceSources: [],
+      priceHistory: [{ date: (/* @__PURE__ */ new Date()).toISOString().split("T")[0], value: estimatedValue }],
+      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    setAppData((prev) => {
+      let vault = getVaultForCategory(prev.vaults, category);
+      let updatedVaults = [...prev.vaults];
+      if (!vault) {
+        vault = createVaultForCategory(category);
+        updatedVaults.push(vault);
+      }
+      const vaultIndex = updatedVaults.findIndex((v) => v.id === vault.id);
+      updatedVaults[vaultIndex] = {
+        ...updatedVaults[vaultIndex],
+        itemIds: [...updatedVaults[vaultIndex].itemIds, newItem.id]
+      };
+      return {
+        ...prev,
+        items: [...prev.items, newItem],
+        vaults: updatedVaults
+      };
+    });
+    setSelectedItemId(newItem.id);
+    setView("item");
+    trackEvent("hydration_auto_create", {
+      category,
+      value: estimatedValue,
+      hasBrandModel: !!hasBrandModel,
+      hasPrice: !!initialData2.estimated_price
+    });
+  }, [initialData2, hasHydrated]);
   const totalPortfolioValue = (0, import_react3.useMemo)(() => {
     return appData.items.reduce((sum, item) => sum + item.estimatedValue, 0);
   }, [appData.items]);
