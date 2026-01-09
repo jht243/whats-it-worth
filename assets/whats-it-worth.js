@@ -26157,10 +26157,10 @@ function WhatsItWorth({ initialData: initialData2 }) {
   };
   return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: styles.container, children: [
     /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 24 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 28, fontWeight: 800, color: COLORS.textMain, marginBottom: 4 }, children: "What's It Worth" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 28, fontWeight: 800, color: COLORS.textMain, marginBottom: 4 }, children: "The Collector's Valuation Engine" }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 14, color: COLORS.textSecondary, display: "flex", alignItems: "center", gap: 6 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { size: 14, color: COLORS.primary }),
-        "AI-Powered Valuations"
+        "Powered by real-time market data & AI analysis"
       ] })
     ] }),
     showBanner && view === "dashboard" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
@@ -26234,32 +26234,75 @@ function WhatsItWorth({ initialData: initialData2 }) {
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { marginBottom: 20 }, children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-        "button",
-        {
-          onClick: () => setView("add"),
-          style: {
-            width: "100%",
-            padding: 14,
-            borderRadius: 16,
-            border: "none",
-            backgroundColor: COLORS.primary,
-            color: "white",
-            fontSize: 15,
-            fontWeight: 700,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            boxShadow: "0 4px 12px rgba(86,197,150,0.3)"
-          },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { size: 20 }),
-            " Add Item"
-          ]
-        }
-      ) }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginBottom: 20, display: "flex", gap: 12 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+          "button",
+          {
+            onClick: () => setView("add"),
+            style: {
+              flex: 1,
+              padding: 14,
+              borderRadius: 16,
+              border: "none",
+              backgroundColor: COLORS.primary,
+              color: "white",
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: "0 4px 12px rgba(86,197,150,0.3)"
+            },
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Plus, { size: 20 }),
+              " Add Manually"
+            ]
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+          "button",
+          {
+            onClick: () => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = "image/*";
+              input.onchange = (e) => {
+                const file = e.target?.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setNewItemImage(event.target?.result);
+                    setView("add");
+                  };
+                  reader.readAsDataURL(file);
+                }
+              };
+              input.click();
+            },
+            style: {
+              flex: 1,
+              padding: 14,
+              borderRadius: 16,
+              border: `2px solid ${COLORS.primary}`,
+              backgroundColor: "white",
+              color: COLORS.primary,
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            },
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Camera, { size: 20 }),
+              " Upload Photo"
+            ]
+          }
+        )
+      ] }),
       appData.vaults.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 16, fontWeight: 700, color: COLORS.textMain, marginBottom: 12 }, children: "Your Vaults" }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 12 }, children: appData.vaults.map((vault) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(

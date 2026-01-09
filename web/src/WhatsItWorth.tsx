@@ -1636,11 +1636,11 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 28, fontWeight: 800, color: COLORS.textMain, marginBottom: 4 }}>
-          What's It Worth
+          The Collector's Valuation Engine
         </div>
         <div style={{ fontSize: 14, color: COLORS.textSecondary, display: "flex", alignItems: "center", gap: 6 }}>
           <Sparkles size={14} color={COLORS.primary} />
-          AI-Powered Valuations
+          Powered by real-time market data & AI analysis
         </div>
       </div>
 
@@ -1702,18 +1702,45 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
           </div>
 
           {/* Quick Actions */}
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 20, display: "flex", gap: 12 }}>
             <button
               onClick={() => setView("add")}
               style={{
-                width: "100%", padding: 14, borderRadius: 16, border: "none",
+                flex: 1, padding: 14, borderRadius: 16, border: "none",
                 backgroundColor: COLORS.primary, color: "white",
                 fontSize: 15, fontWeight: 700, cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 boxShadow: "0 4px 12px rgba(86,197,150,0.3)"
               }}
             >
-              <Plus size={20} /> Add Item
+              <Plus size={20} /> Add Manually
+            </button>
+            <button
+              onClick={() => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.onchange = (e: any) => {
+                  const file = e.target?.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setNewItemImage(event.target?.result as string);
+                      setView("add");
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                };
+                input.click();
+              }}
+              style={{
+                flex: 1, padding: 14, borderRadius: 16, border: `2px solid ${COLORS.primary}`,
+                backgroundColor: "white", color: COLORS.primary,
+                fontSize: 15, fontWeight: 700, cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+            >
+              <Camera size={20} /> Upload Photo
             </button>
           </div>
 
