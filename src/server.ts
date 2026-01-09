@@ -1620,24 +1620,37 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
 async function handleSseRequest(res: ServerResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  
   const server = createWhatsItWorthServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
 
+  // Keep-alive ping to prevent proxy/load balancer timeouts
+  const keepAliveInterval = setInterval(() => {
+    if (!res.writableEnded) {
+      res.write(": keep-alive\n\n");
+    }
+  }, 30000); // Send keep-alive every 30 seconds
+
   sessions.set(sessionId, { server, transport });
 
   transport.onclose = async () => {
+    clearInterval(keepAliveInterval);
     sessions.delete(sessionId);
     await server.close();
   };
 
   transport.onerror = (error) => {
+    clearInterval(keepAliveInterval);
     console.error("SSE transport error", error);
   };
 
   try {
     await server.connect(transport);
   } catch (error) {
+    clearInterval(keepAliveInterval);
     sessions.delete(sessionId);
     console.error("Failed to start SSE session", error);
     if (!res.headersSent) {
