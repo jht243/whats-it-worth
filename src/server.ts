@@ -278,8 +278,7 @@ const widgets: WhatsItWorthWidget[] = [
     templateUri: `ui://widget/whats-it-worth.html?v=${VERSION}`,
     invoking:
       "Opening What's It Worth...",
-    invoked:
-      "Here is What's It Worth. Enter your item details to find out their value.",
+    invoked: "",
     html: readWidgetHtml("whats-it-worth"),
   },
 ];
@@ -341,29 +340,12 @@ const toolInputParser = z.object({
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this tool to find out what items are worth. Helps users get valuations for individual items or collections. Call this tool immediately with NO arguments to let the user enter their item details manually. Only provide arguments if the user has explicitly stated them. IMPORTANT: Do NOT pass placeholder values like 'Unknown', 'N/A', or 'none' for any field — simply omit the field instead. For trading cards, put the player name in item_name (e.g. 'LeBron James'), not in brand/model. For watches, put the brand (e.g. 'Rolex') in brand and the model (e.g. 'Submariner') in model. Always set item_name to a human-readable name for the item.",
+    "Use this tool to find out what items are worth. Helps users get valuations for individual items or collections. Call this tool immediately with NO arguments to let the user enter their item details manually. Only provide arguments if the user has explicitly stated them. IMPORTANT: Do NOT pass placeholder values like 'Unknown', 'N/A', or 'none' for any field — simply omit the field instead. For trading cards, put the player name in item_name (e.g. 'LeBron James'), not in brand/model. For watches, put the brand (e.g. 'Rolex') in brand and the model (e.g. 'Submariner') in model. Always set item_name to a human-readable name for the item. IMPORTANT: After this tool returns a widget, do NOT add any extra text, commentary, or follow-up questions. The widget provides all necessary information and interaction. Simply display the widget with no additional response.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
     properties: {
       ready: { type: "boolean" },
-      item_name: { type: "string" },
-      category: { type: "string" },
-      summary: {
-        type: "object",
-        properties: {
-          item_name: { type: ["string", "null"] },
-          category: { type: ["string", "null"] },
-          brand: { type: ["string", "null"] },
-          model: { type: ["string", "null"] },
-          year: { type: ["number", "null"] },
-          condition: { type: ["string", "null"] },
-        },
-      },
-      suggested_followups: {
-        type: "array",
-        items: { type: "string" },
-      },
     },
   },
   title: widget.title,
@@ -905,13 +887,6 @@ function createWhatsItWorthServer(): Server {
         const structured = {
           ready: true,
           ...args,
-          summary: computeSummary(args),
-          suggested_followups: [
-            "How did you determine this value?",
-            "Where can I sell this item?",
-            "What affects the price the most?",
-            "Is now a good time to sell?"
-          ],
         } as const;
 
         // Embed the widget resource in _meta to mirror official examples and improve hydration reliability
