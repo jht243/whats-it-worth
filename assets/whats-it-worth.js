@@ -25039,6 +25039,93 @@ var resetAllData = () => {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(BANNER_STORAGE_KEY);
 };
+var REFINE_FIELDS = {
+  watches: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Rolex, Omega" },
+    { key: "model", label: "Model", placeholder: "e.g. Submariner, Speedmaster" },
+    { key: "variant", label: "Variant", placeholder: "e.g. Date, No Date, GMT" },
+    { key: "reference", label: "Reference #", placeholder: "e.g. 126610LN" },
+    { key: "year", label: "Year", placeholder: "e.g. 2023", type: "number" },
+    { key: "size_mm", label: "Size (mm)", placeholder: "e.g. 41", type: "number" },
+    { key: "dial_color", label: "Dial color", placeholder: "e.g. black, blue" },
+    { key: "bezel_color", label: "Bezel color", placeholder: "e.g. ceramic black" },
+    { key: "material", label: "Material", placeholder: "e.g. stainless steel, 18k gold" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  trading_cards: [
+    { key: "brand", label: "Player / Character", placeholder: "e.g. LeBron James" },
+    { key: "model", label: "Card set / Brand", placeholder: "e.g. Topps Chrome, Prizm" },
+    { key: "variant", label: "Grade", placeholder: "e.g. PSA 10, BGS 9.5, Raw" },
+    { key: "year", label: "Year", placeholder: "e.g. 2003", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  pokemon: [
+    { key: "brand", label: "Pok\xE9mon name", placeholder: "e.g. Charizard, Pikachu" },
+    { key: "model", label: "Set", placeholder: "e.g. Base Set, Evolving Skies" },
+    { key: "variant", label: "Grade", placeholder: "e.g. PSA 10, CGC 9.5, Raw" },
+    { key: "year", label: "Year", placeholder: "e.g. 1999", type: "number" },
+    { key: "reference", label: "Card number", placeholder: "e.g. 4/102" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  cars: [
+    { key: "brand", label: "Make", placeholder: "e.g. Ford, Porsche, Ferrari" },
+    { key: "model", label: "Model", placeholder: "e.g. Mustang, 911, F-150" },
+    { key: "variant", label: "Trim / Package", placeholder: "e.g. GT, Turbo S, Hellcat" },
+    { key: "year", label: "Year", placeholder: "e.g. 2023", type: "number" },
+    { key: "material", label: "Mileage", placeholder: "e.g. 45000" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  jewelry: [
+    { key: "brand", label: "Brand / Designer", placeholder: "e.g. Tiffany, Cartier" },
+    { key: "model", label: "Type", placeholder: "e.g. engagement ring, pendant" },
+    { key: "material", label: "Material", placeholder: "e.g. 18k gold, platinum" },
+    { key: "variant", label: "Gemstone", placeholder: "e.g. 1.5ct diamond, ruby" },
+    { key: "year", label: "Year", placeholder: "e.g. 2020", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  sneakers: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Nike, Adidas, New Balance" },
+    { key: "model", label: "Model", placeholder: "e.g. Air Jordan 1, Yeezy 350" },
+    { key: "variant", label: "Colorway", placeholder: "e.g. Chicago, Bred, Zebra" },
+    { key: "size_mm", label: "Size (US)", placeholder: "e.g. 10.5", type: "number" },
+    { key: "year", label: "Year", placeholder: "e.g. 2023", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. Deadstock, VNDS, Used" }
+  ],
+  handbags: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Herm\xE8s, Chanel, LV" },
+    { key: "model", label: "Model", placeholder: "e.g. Birkin 25, Classic Flap" },
+    { key: "material", label: "Material", placeholder: "e.g. Togo leather, Caviar" },
+    { key: "dial_color", label: "Color", placeholder: "e.g. Gold, Black, Etoupe" },
+    { key: "year", label: "Year", placeholder: "e.g. 2022", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  art: [
+    { key: "brand", label: "Artist", placeholder: "e.g. Banksy, Warhol" },
+    { key: "model", label: "Title", placeholder: "e.g. Girl with Balloon" },
+    { key: "variant", label: "Medium", placeholder: "e.g. Oil on canvas, Acrylic" },
+    { key: "size_mm", label: "Size (inches)", placeholder: "e.g. 24x36" },
+    { key: "year", label: "Year", placeholder: "e.g. 1995", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ],
+  guitars: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Fender, Gibson, Martin" },
+    { key: "model", label: "Model", placeholder: "e.g. Stratocaster, Les Paul" },
+    { key: "variant", label: "Variant", placeholder: "e.g. American Pro II, Custom" },
+    { key: "year", label: "Year", placeholder: "e.g. 1965", type: "number" },
+    { key: "reference", label: "Serial #", placeholder: "e.g. US22031234" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+  ]
+};
+var DEFAULT_REFINE_FIELDS = [
+  { key: "brand", label: "Brand / Maker", placeholder: "e.g. the manufacturer" },
+  { key: "model", label: "Model / Type", placeholder: "e.g. the specific model" },
+  { key: "variant", label: "Variant / Edition", placeholder: "e.g. limited edition" },
+  { key: "year", label: "Year", placeholder: "e.g. 2020", type: "number" },
+  { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" }
+];
+function getRefineFieldsForCategory(category) {
+  return REFINE_FIELDS[category] || DEFAULT_REFINE_FIELDS;
+}
 var detectCategory = (text) => {
   const lower = text.toLowerCase();
   for (const [category, info] of Object.entries(CATEGORIES)) {
@@ -25728,15 +25815,8 @@ function WhatsItWorth({ initialData: rawInitialData }) {
   const [selectedVaultId, setSelectedVaultId] = (0, import_react3.useState)(null);
   const [selectedItemId, setSelectedItemId] = (0, import_react3.useState)(null);
   const [showRefineModal, setShowRefineModal] = (0, import_react3.useState)(false);
-  const [refineBrand, setRefineBrand] = (0, import_react3.useState)("");
-  const [refineModel, setRefineModel] = (0, import_react3.useState)("");
-  const [refineVariant, setRefineVariant] = (0, import_react3.useState)("");
-  const [refineReference, setRefineReference] = (0, import_react3.useState)("");
-  const [refineSizeMm, setRefineSizeMm] = (0, import_react3.useState)("");
-  const [refineDialColor, setRefineDialColor] = (0, import_react3.useState)("");
-  const [refineBezelColor, setRefineBezelColor] = (0, import_react3.useState)("");
-  const [refineMaterial, setRefineMaterial] = (0, import_react3.useState)("");
-  const [refineYear, setRefineYear] = (0, import_react3.useState)("");
+  const [refineFields, setRefineFields] = (0, import_react3.useState)({});
+  const [isRefining, setIsRefining] = (0, import_react3.useState)(false);
   const [hydrationMetadata] = (0, import_react3.useState)(() => {
     if (!initialData2) return {};
     return {
@@ -25796,9 +25876,9 @@ function WhatsItWorth({ initialData: rawInitialData }) {
       return changed ? { ...prev, items: nextItems } : prev;
     });
   }, []);
-  const [hasHydrated, setHasHydrated] = (0, import_react3.useState)(false);
+  const hydrationRan = (0, import_react3.useRef)(false);
   (0, import_react3.useEffect)(() => {
-    if (hasHydrated) return;
+    if (hydrationRan.current) return;
     if (!initialData2) return;
     const hasBrandModel = initialData2.brand && initialData2.model;
     const hasBrand = !!initialData2.brand;
@@ -25806,14 +25886,25 @@ function WhatsItWorth({ initialData: rawInitialData }) {
     const hasEnoughInfo = hasBrandModel || hasBrand || hasItemName;
     if (!hasEnoughInfo) {
       console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
-      setHasHydrated(true);
+      hydrationRan.current = true;
       return;
     }
-    console.log("[Hydration] Auto-creating item from initialData:", initialData2);
-    setHasHydrated(true);
+    hydrationRan.current = true;
     const partsName = [initialData2.brand, initialData2.model, initialData2.variant].filter(Boolean).join(" ");
     const itemName = initialData2.item_name || partsName || "Unknown Item";
     const category = initialData2.category || detectCategory(itemName + " " + (initialData2.item_description || ""));
+    const nameLower = itemName.toLowerCase().trim();
+    const existing = appData.items.find(
+      (it) => it.name.toLowerCase().trim() === nameLower && it.category === category
+    );
+    if (existing) {
+      console.log("[Hydration] Found existing item, navigating:", existing.id);
+      setSelectedItemId(existing.id);
+      setView("item");
+      trackEvent("hydration_reuse_existing", { category });
+      return;
+    }
+    console.log("[Hydration] Auto-creating item from initialData:", initialData2);
     const metadata = {
       brand: initialData2.brand,
       model: initialData2.model,
@@ -25848,6 +25939,10 @@ function WhatsItWorth({ initialData: rawInitialData }) {
       updatedAt: (/* @__PURE__ */ new Date()).toISOString()
     });
     setAppData((prev) => {
+      const alreadyExists = prev.items.some(
+        (it) => it.name.toLowerCase().trim() === nameLower && it.category === category
+      );
+      if (alreadyExists) return prev;
       let vault = getVaultForCategory(prev.vaults, category);
       let updatedVaults = [...prev.vaults];
       if (!vault) {
@@ -25872,7 +25967,7 @@ function WhatsItWorth({ initialData: rawInitialData }) {
       value: estimatedValue,
       hasBrandModel: !!hasBrandModel
     });
-  }, [initialData2, hasHydrated]);
+  }, [initialData2]);
   const totalPortfolioValue = (0, import_react3.useMemo)(() => {
     return appData.items.reduce((sum, item) => sum + item.estimatedValue, 0);
   }, [appData.items]);
@@ -26059,61 +26154,68 @@ function WhatsItWorth({ initialData: rawInitialData }) {
   const openRefineModal = (0, import_react3.useCallback)(() => {
     if (!selectedItem) return;
     const m = selectedItem.metadata || {};
-    setRefineBrand(m.brand || "");
-    setRefineModel(m.model || "");
-    setRefineVariant(m.variant || "");
-    setRefineReference(m.reference || "");
-    setRefineSizeMm(typeof m.size_mm === "number" ? String(m.size_mm) : "");
-    setRefineDialColor(m.dial_color || "");
-    setRefineBezelColor(m.bezel_color || "");
-    setRefineMaterial(m.material || "");
-    setRefineYear(typeof m.year === "number" ? String(m.year) : "");
+    const fields = {};
+    const defs = getRefineFieldsForCategory(selectedItem.category);
+    for (const def of defs) {
+      const val = m[def.key];
+      fields[def.key] = val != null ? String(val) : "";
+    }
+    setRefineFields(fields);
+    setIsRefining(false);
     setShowRefineModal(true);
     if (selectedItem.category === "watches" && selectedItem.imageData && (!m.dial_color || !m.bezel_color)) {
       inferWatchColorsFromImageData(selectedItem.imageData).then((colors) => {
-        if (!m.dial_color && colors.dial_color) setRefineDialColor(colors.dial_color);
-        if (!m.bezel_color && colors.bezel_color) setRefineBezelColor(colors.bezel_color);
+        setRefineFields((prev) => ({
+          ...prev,
+          ...!m.dial_color && colors.dial_color ? { dial_color: colors.dial_color } : {},
+          ...!m.bezel_color && colors.bezel_color ? { bezel_color: colors.bezel_color } : {}
+        }));
       });
     }
   }, [selectedItem]);
   const applyRefine = (0, import_react3.useCallback)(() => {
     if (!selectedItem) return;
-    const sizeMm = Number(refineSizeMm);
-    const year = Number(refineYear);
-    const nextMetadata = {
-      ...selectedItem.metadata,
-      brand: refineBrand.trim() || void 0,
-      model: refineModel.trim() || void 0,
-      variant: refineVariant.trim() || void 0,
-      reference: refineReference.trim() || void 0,
-      size_mm: Number.isFinite(sizeMm) ? sizeMm : void 0,
-      dial_color: refineDialColor.trim() || void 0,
-      bezel_color: refineBezelColor.trim() || void 0,
-      material: refineMaterial.trim() || void 0,
-      year: Number.isFinite(year) ? year : void 0
-    };
-    const updated = ensureItemPriceSources({
-      ...selectedItem,
-      metadata: nextMetadata,
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
-    });
-    setAppData((prev) => ({
-      ...prev,
-      items: prev.items.map((it) => it.id === updated.id ? updated : it)
-    }));
-    setShowRefineModal(false);
-  }, [
-    selectedItem,
-    refineBrand,
-    refineModel,
-    refineVariant,
-    refineReference,
-    refineSizeMm,
-    refineDialColor,
-    refineBezelColor,
-    refineMaterial,
-    refineYear
-  ]);
+    setIsRefining(true);
+    const nextMetadata = { ...selectedItem.metadata };
+    const defs = getRefineFieldsForCategory(selectedItem.category);
+    for (const def of defs) {
+      const raw = (refineFields[def.key] || "").trim();
+      if (!raw) {
+        delete nextMetadata[def.key];
+        continue;
+      }
+      if (def.type === "number") {
+        const n = Number(raw);
+        if (Number.isFinite(n)) nextMetadata[def.key] = n;
+      } else {
+        nextMetadata[def.key] = raw;
+      }
+    }
+    setTimeout(() => {
+      const itemName = selectedItem.name;
+      const desc = selectedItem.description;
+      const revaluation = generateMockValuation(itemName, desc, selectedItem.category);
+      const updated = ensureItemPriceSources({
+        ...selectedItem,
+        metadata: nextMetadata,
+        estimatedValue: revaluation.estimatedValue,
+        valueRange: revaluation.valueRange,
+        confidence: revaluation.confidence,
+        priceSources: revaluation.priceSources,
+        priceHistory: [
+          ...selectedItem.priceHistory,
+          { date: (/* @__PURE__ */ new Date()).toISOString().split("T")[0], value: revaluation.estimatedValue }
+        ],
+        updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      });
+      setAppData((prev) => ({
+        ...prev,
+        items: prev.items.map((it) => it.id === updated.id ? updated : it)
+      }));
+      setIsRefining(false);
+      setShowRefineModal(false);
+    }, 1500);
+  }, [selectedItem, refineFields]);
   const styles = {
     container: {
       width: "100%",
@@ -26603,99 +26705,143 @@ function WhatsItWorth({ initialData: rawInitialData }) {
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: selectedItem.priceHistory[selectedItem.priceHistory.length - 1]?.date })
           ] })
         ] }),
-        showRefineModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "div",
-          {
-            onClick: () => setShowRefineModal(false),
-            style: {
-              position: "fixed",
-              inset: 0,
-              backgroundColor: "rgba(0,0,0,0.4)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 16,
-              zIndex: 9999
-            },
-            children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-              "div",
-              {
-                onClick: (e) => e.stopPropagation(),
-                style: {
-                  width: "100%",
-                  maxWidth: 520,
-                  backgroundColor: COLORS.card,
-                  borderRadius: 16,
-                  padding: 16,
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)"
-                },
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 16, fontWeight: 800, color: COLORS.textMain }, children: "Refine your price" }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                      "button",
+        showRefineModal && (() => {
+          const fieldDefs = getRefineFieldsForCategory(selectedItem.category);
+          const catName = CATEGORIES[selectedItem.category]?.name || "Item";
+          return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "div",
+            {
+              onClick: () => !isRefining && setShowRefineModal(false),
+              style: {
+                position: "fixed",
+                inset: 0,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 16,
+                zIndex: 9999
+              },
+              children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                "div",
+                {
+                  onClick: (e) => e.stopPropagation(),
+                  style: {
+                    width: "100%",
+                    maxWidth: 520,
+                    backgroundColor: COLORS.card,
+                    borderRadius: 16,
+                    padding: 16,
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                    position: "relative",
+                    overflow: "hidden"
+                  },
+                  children: [
+                    isRefining && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+                      position: "absolute",
+                      inset: 0,
+                      backgroundColor: "rgba(255,255,255,0.92)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      zIndex: 10,
+                      borderRadius: 16
+                    }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, { size: 28, color: COLORS.primary, style: {
+                        animation: "spin 1s linear infinite"
+                      } }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+                        marginTop: 12,
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: COLORS.primary
+                      }, children: "Checking new price..." }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+                        marginTop: 4,
+                        fontSize: 12,
+                        color: COLORS.textSecondary
+                      }, children: "Updating valuation with your details" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("style", { children: `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }` })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 16, fontWeight: 800, color: COLORS.textMain }, children: [
+                        "Refine ",
+                        catName,
+                        " Price"
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "button",
+                        {
+                          onClick: () => setShowRefineModal(false),
+                          style: { background: "none", border: "none", cursor: "pointer", padding: 4 },
+                          children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { size: 18, color: COLORS.textSecondary })
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { fontSize: 12, color: COLORS.textSecondary, marginBottom: 12, lineHeight: 1.4 }, children: [
+                      "Add details about your ",
+                      catName.toLowerCase(),
+                      " to get a more accurate valuation."
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }, children: fieldDefs.map((def) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "input",
                       {
-                        onClick: () => setShowRefineModal(false),
-                        style: { background: "none", border: "none", cursor: "pointer", padding: 4 },
-                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { size: 18, color: COLORS.textSecondary })
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 12, color: COLORS.textSecondary, marginBottom: 12, lineHeight: 1.4 }, children: "Add any details you know (especially model and reference number). This will improve the accuracy of the marketplace search links." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Brand (e.g. Omega)", value: refineBrand, onChange: (e) => setRefineBrand(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Model (e.g. Seamaster)", value: refineModel, onChange: (e) => setRefineModel(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Variant (e.g. Diver 300M)", value: refineVariant, onChange: (e) => setRefineVariant(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Reference (e.g. 210.30.42.20.03.001)", value: refineReference, onChange: (e) => setRefineReference(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Size mm (e.g. 42)", value: refineSizeMm, onChange: (e) => setRefineSizeMm(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Year (e.g. 2019)", value: refineYear, onChange: (e) => setRefineYear(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Dial color (e.g. blue)", value: refineDialColor, onChange: (e) => setRefineDialColor(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Bezel color (e.g. blue)", value: refineBezelColor, onChange: (e) => setRefineBezelColor(e.target.value), style: styles.input }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", { placeholder: "Material (e.g. stainless steel)", value: refineMaterial, onChange: (e) => setRefineMaterial(e.target.value), style: styles.input })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, marginTop: 14 }, children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                      "button",
-                      {
-                        onClick: () => setShowRefineModal(false),
-                        style: {
-                          flex: 1,
-                          padding: "12px 14px",
-                          borderRadius: 12,
-                          border: `1px solid ${COLORS.border}`,
-                          backgroundColor: COLORS.card,
-                          color: COLORS.textMain,
-                          fontSize: 14,
-                          fontWeight: 700,
-                          cursor: "pointer"
-                        },
-                        children: "Cancel"
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                      "button",
-                      {
-                        onClick: applyRefine,
-                        style: {
-                          flex: 1,
-                          padding: "12px 14px",
-                          borderRadius: 12,
-                          border: "none",
-                          backgroundColor: COLORS.primary,
-                          color: "white",
-                          fontSize: 14,
-                          fontWeight: 800,
-                          cursor: "pointer"
-                        },
-                        children: "Update links"
-                      }
-                    )
-                  ] })
-                ]
-              }
-            )
-          }
-        ),
+                        placeholder: `${def.label} (${def.placeholder})`,
+                        value: refineFields[def.key] || "",
+                        onChange: (e) => setRefineFields((prev) => ({ ...prev, [def.key]: e.target.value })),
+                        style: styles.input
+                      },
+                      def.key
+                    )) }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 10, marginTop: 14 }, children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "button",
+                        {
+                          onClick: () => setShowRefineModal(false),
+                          disabled: isRefining,
+                          style: {
+                            flex: 1,
+                            padding: "12px 14px",
+                            borderRadius: 12,
+                            border: `1px solid ${COLORS.border}`,
+                            backgroundColor: COLORS.card,
+                            color: COLORS.textMain,
+                            fontSize: 14,
+                            fontWeight: 700,
+                            cursor: isRefining ? "not-allowed" : "pointer",
+                            opacity: isRefining ? 0.5 : 1
+                          },
+                          children: "Cancel"
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "button",
+                        {
+                          onClick: applyRefine,
+                          disabled: isRefining,
+                          style: {
+                            flex: 1,
+                            padding: "12px 14px",
+                            borderRadius: 12,
+                            border: "none",
+                            backgroundColor: COLORS.primary,
+                            color: "white",
+                            fontSize: 14,
+                            fontWeight: 800,
+                            cursor: isRefining ? "not-allowed" : "pointer",
+                            opacity: isRefining ? 0.5 : 1
+                          },
+                          children: "Update Price"
+                        }
+                      )
+                    ] })
+                  ]
+                }
+              )
+            }
+          );
+        })(),
         Object.keys(selectedItem.metadata).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { marginTop: 20 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: { fontSize: 14, fontWeight: 700, color: COLORS.textMain, marginBottom: 12 }, children: "Item Details" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8 }, children: [

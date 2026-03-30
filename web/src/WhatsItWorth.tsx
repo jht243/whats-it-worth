@@ -370,6 +370,100 @@ const resetAllData = () => {
   localStorage.removeItem(BANNER_STORAGE_KEY);
 };
 
+// ============ CATEGORY-SPECIFIC REFINE FIELDS ============
+
+type RefineFieldDef = { key: string; label: string; placeholder: string; type?: "text" | "number" };
+
+const REFINE_FIELDS: Record<string, RefineFieldDef[]> = {
+  watches: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Rolex, Omega" },
+    { key: "model", label: "Model", placeholder: "e.g. Submariner, Speedmaster" },
+    { key: "variant", label: "Variant", placeholder: "e.g. Date, No Date, GMT" },
+    { key: "reference", label: "Reference #", placeholder: "e.g. 126610LN" },
+    { key: "year", label: "Year", placeholder: "e.g. 2023", type: "number" },
+    { key: "size_mm", label: "Size (mm)", placeholder: "e.g. 41", type: "number" },
+    { key: "dial_color", label: "Dial color", placeholder: "e.g. black, blue" },
+    { key: "bezel_color", label: "Bezel color", placeholder: "e.g. ceramic black" },
+    { key: "material", label: "Material", placeholder: "e.g. stainless steel, 18k gold" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  trading_cards: [
+    { key: "brand", label: "Player / Character", placeholder: "e.g. LeBron James" },
+    { key: "model", label: "Card set / Brand", placeholder: "e.g. Topps Chrome, Prizm" },
+    { key: "variant", label: "Grade", placeholder: "e.g. PSA 10, BGS 9.5, Raw" },
+    { key: "year", label: "Year", placeholder: "e.g. 2003", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  pokemon: [
+    { key: "brand", label: "Pokémon name", placeholder: "e.g. Charizard, Pikachu" },
+    { key: "model", label: "Set", placeholder: "e.g. Base Set, Evolving Skies" },
+    { key: "variant", label: "Grade", placeholder: "e.g. PSA 10, CGC 9.5, Raw" },
+    { key: "year", label: "Year", placeholder: "e.g. 1999", type: "number" },
+    { key: "reference", label: "Card number", placeholder: "e.g. 4/102" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  cars: [
+    { key: "brand", label: "Make", placeholder: "e.g. Ford, Porsche, Ferrari" },
+    { key: "model", label: "Model", placeholder: "e.g. Mustang, 911, F-150" },
+    { key: "variant", label: "Trim / Package", placeholder: "e.g. GT, Turbo S, Hellcat" },
+    { key: "year", label: "Year", placeholder: "e.g. 2023", type: "number" },
+    { key: "material", label: "Mileage", placeholder: "e.g. 45000" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  jewelry: [
+    { key: "brand", label: "Brand / Designer", placeholder: "e.g. Tiffany, Cartier" },
+    { key: "model", label: "Type", placeholder: "e.g. engagement ring, pendant" },
+    { key: "material", label: "Material", placeholder: "e.g. 18k gold, platinum" },
+    { key: "variant", label: "Gemstone", placeholder: "e.g. 1.5ct diamond, ruby" },
+    { key: "year", label: "Year", placeholder: "e.g. 2020", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  sneakers: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Nike, Adidas, New Balance" },
+    { key: "model", label: "Model", placeholder: "e.g. Air Jordan 1, Yeezy 350" },
+    { key: "variant", label: "Colorway", placeholder: "e.g. Chicago, Bred, Zebra" },
+    { key: "size_mm", label: "Size (US)", placeholder: "e.g. 10.5", type: "number" },
+    { key: "year", label: "Year", placeholder: "e.g. 2023", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. Deadstock, VNDS, Used" },
+  ],
+  handbags: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Hermès, Chanel, LV" },
+    { key: "model", label: "Model", placeholder: "e.g. Birkin 25, Classic Flap" },
+    { key: "material", label: "Material", placeholder: "e.g. Togo leather, Caviar" },
+    { key: "dial_color", label: "Color", placeholder: "e.g. Gold, Black, Etoupe" },
+    { key: "year", label: "Year", placeholder: "e.g. 2022", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  art: [
+    { key: "brand", label: "Artist", placeholder: "e.g. Banksy, Warhol" },
+    { key: "model", label: "Title", placeholder: "e.g. Girl with Balloon" },
+    { key: "variant", label: "Medium", placeholder: "e.g. Oil on canvas, Acrylic" },
+    { key: "size_mm", label: "Size (inches)", placeholder: "e.g. 24x36" },
+    { key: "year", label: "Year", placeholder: "e.g. 1995", type: "number" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+  guitars: [
+    { key: "brand", label: "Brand", placeholder: "e.g. Fender, Gibson, Martin" },
+    { key: "model", label: "Model", placeholder: "e.g. Stratocaster, Les Paul" },
+    { key: "variant", label: "Variant", placeholder: "e.g. American Pro II, Custom" },
+    { key: "year", label: "Year", placeholder: "e.g. 1965", type: "number" },
+    { key: "reference", label: "Serial #", placeholder: "e.g. US22031234" },
+    { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+  ],
+};
+
+const DEFAULT_REFINE_FIELDS: RefineFieldDef[] = [
+  { key: "brand", label: "Brand / Maker", placeholder: "e.g. the manufacturer" },
+  { key: "model", label: "Model / Type", placeholder: "e.g. the specific model" },
+  { key: "variant", label: "Variant / Edition", placeholder: "e.g. limited edition" },
+  { key: "year", label: "Year", placeholder: "e.g. 2020", type: "number" },
+  { key: "condition", label: "Condition", placeholder: "e.g. mint, excellent, good" },
+];
+
+function getRefineFieldsForCategory(category: string): RefineFieldDef[] {
+  return REFINE_FIELDS[category] || DEFAULT_REFINE_FIELDS;
+}
+
 // ============ AI VALUATION (Mock - will integrate with OpenAI) ============
 
 const detectCategory = (text: string): string => {
@@ -1145,15 +1239,8 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   const [showRefineModal, setShowRefineModal] = useState(false);
-  const [refineBrand, setRefineBrand] = useState("");
-  const [refineModel, setRefineModel] = useState("");
-  const [refineVariant, setRefineVariant] = useState("");
-  const [refineReference, setRefineReference] = useState("");
-  const [refineSizeMm, setRefineSizeMm] = useState("");
-  const [refineDialColor, setRefineDialColor] = useState("");
-  const [refineBezelColor, setRefineBezelColor] = useState("");
-  const [refineMaterial, setRefineMaterial] = useState("");
-  const [refineYear, setRefineYear] = useState("");
+  const [refineFields, setRefineFields] = useState<Record<string, string>>({});
+  const [isRefining, setIsRefining] = useState(false);
 
   // Store metadata from ChatGPT for use when adding items
   const [hydrationMetadata] = useState<ItemMetadata>(() => {
@@ -1223,13 +1310,12 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
     });
   }, []);
 
-  // Auto-hydration: Create item and navigate to it when initialData has specific info
-  const [hasHydrated, setHasHydrated] = useState(false);
+  // Auto-hydration: Create item (or navigate to existing) when initialData has specific info
+  const hydrationRan = useRef(false);
   useEffect(() => {
-    if (hasHydrated) return;
+    if (hydrationRan.current) return;
     if (!initialData) return;
     
-    // Check if we have enough specific information to auto-create an item
     const hasBrandModel = initialData.brand && initialData.model;
     const hasBrand = !!initialData.brand;
     const hasItemName = !!initialData.item_name;
@@ -1237,23 +1323,35 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
     
     if (!hasEnoughInfo) {
       console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
-      setHasHydrated(true);
+      hydrationRan.current = true;
       return;
     }
 
-    console.log("[Hydration] Auto-creating item from initialData:", initialData);
-    setHasHydrated(true);
+    hydrationRan.current = true;
 
     // Build item name: prefer item_name from server, fall back to brand/model/variant
     const partsName = [initialData.brand, initialData.model, initialData.variant]
       .filter(Boolean)
       .join(" ");
     const itemName = initialData.item_name || partsName || "Unknown Item";
-
-    // Determine category
     const category = initialData.category || detectCategory(itemName + " " + (initialData.item_description || ""));
 
-    // Build metadata
+    // Check for existing item with same name + category to avoid duplicates
+    const nameLower = itemName.toLowerCase().trim();
+    const existing = appData.items.find(
+      (it) => it.name.toLowerCase().trim() === nameLower && it.category === category
+    );
+
+    if (existing) {
+      console.log("[Hydration] Found existing item, navigating:", existing.id);
+      setSelectedItemId(existing.id);
+      setView("item");
+      trackEvent("hydration_reuse_existing", { category });
+      return;
+    }
+
+    console.log("[Hydration] Auto-creating item from initialData:", initialData);
+
     const metadata: ItemMetadata = {
       brand: initialData.brand,
       model: initialData.model,
@@ -1267,7 +1365,6 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
       condition: initialData.condition,
     };
 
-    // Use ChatGPT's price estimate or generate mock valuation
     const mockValuation = generateMockValuation(itemName, initialData.item_description || "", category);
     const estimatedValue = initialData.estimated_price || mockValuation.estimatedValue;
     const valueRange = initialData.estimated_price
@@ -1278,7 +1375,6 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
       : mockValuation.valueRange;
     const confidence = (initialData.confidence || mockValuation.confidence) as "low" | "medium" | "high";
 
-    // Create the item
     const newItem: Item = ensureItemPriceSources({
       id: `item-${Date.now()}`,
       name: itemName,
@@ -1294,8 +1390,13 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
       updatedAt: new Date().toISOString(),
     });
 
-    // Find or create vault for this category
     setAppData((prev) => {
+      // Double-check inside the updater to prevent race conditions
+      const alreadyExists = prev.items.some(
+        (it) => it.name.toLowerCase().trim() === nameLower && it.category === category
+      );
+      if (alreadyExists) return prev;
+
       let vault = getVaultForCategory(prev.vaults, category);
       let updatedVaults = [...prev.vaults];
 
@@ -1304,7 +1405,6 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
         updatedVaults.push(vault);
       }
 
-      // Add item to vault
       const vaultIndex = updatedVaults.findIndex((v) => v.id === vault!.id);
       updatedVaults[vaultIndex] = {
         ...updatedVaults[vaultIndex],
@@ -1318,7 +1418,6 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
       };
     });
 
-    // Navigate to show the new item
     setSelectedItemId(newItem.id);
     setView("item");
 
@@ -1327,7 +1426,7 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
       value: estimatedValue,
       hasBrandModel: !!hasBrandModel
     });
-  }, [initialData, hasHydrated]);
+  }, [initialData]);
 
   // Calculate totals
   const totalPortfolioValue = useMemo(() => {
@@ -1563,15 +1662,14 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
   const openRefineModal = useCallback(() => {
     if (!selectedItem) return;
     const m = selectedItem.metadata || {};
-    setRefineBrand(m.brand || "");
-    setRefineModel(m.model || "");
-    setRefineVariant(m.variant || "");
-    setRefineReference(m.reference || "");
-    setRefineSizeMm(typeof m.size_mm === "number" ? String(m.size_mm) : "");
-    setRefineDialColor(m.dial_color || "");
-    setRefineBezelColor(m.bezel_color || "");
-    setRefineMaterial(m.material || "");
-    setRefineYear(typeof m.year === "number" ? String(m.year) : "");
+    const fields: Record<string, string> = {};
+    const defs = getRefineFieldsForCategory(selectedItem.category);
+    for (const def of defs) {
+      const val = m[def.key];
+      fields[def.key] = val != null ? String(val) : "";
+    }
+    setRefineFields(fields);
+    setIsRefining(false);
     setShowRefineModal(true);
 
     if (
@@ -1580,53 +1678,63 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
       (!m.dial_color || !m.bezel_color)
     ) {
       inferWatchColorsFromImageData(selectedItem.imageData).then((colors) => {
-        if (!m.dial_color && colors.dial_color) setRefineDialColor(colors.dial_color);
-        if (!m.bezel_color && colors.bezel_color) setRefineBezelColor(colors.bezel_color);
+        setRefineFields(prev => ({
+          ...prev,
+          ...(!m.dial_color && colors.dial_color ? { dial_color: colors.dial_color } : {}),
+          ...(!m.bezel_color && colors.bezel_color ? { bezel_color: colors.bezel_color } : {}),
+        }));
       });
     }
   }, [selectedItem]);
 
   const applyRefine = useCallback(() => {
     if (!selectedItem) return;
+    setIsRefining(true);
 
-    const sizeMm = Number(refineSizeMm);
-    const year = Number(refineYear);
-    const nextMetadata: ItemMetadata = {
-      ...selectedItem.metadata,
-      brand: refineBrand.trim() || undefined,
-      model: refineModel.trim() || undefined,
-      variant: refineVariant.trim() || undefined,
-      reference: refineReference.trim() || undefined,
-      size_mm: Number.isFinite(sizeMm) ? sizeMm : undefined,
-      dial_color: refineDialColor.trim() || undefined,
-      bezel_color: refineBezelColor.trim() || undefined,
-      material: refineMaterial.trim() || undefined,
-      year: Number.isFinite(year) ? year : undefined,
-    };
+    const nextMetadata: ItemMetadata = { ...selectedItem.metadata };
+    const defs = getRefineFieldsForCategory(selectedItem.category);
+    for (const def of defs) {
+      const raw = (refineFields[def.key] || "").trim();
+      if (!raw) {
+        delete nextMetadata[def.key];
+        continue;
+      }
+      if (def.type === "number") {
+        const n = Number(raw);
+        if (Number.isFinite(n)) nextMetadata[def.key] = n;
+      } else {
+        nextMetadata[def.key] = raw;
+      }
+    }
 
-    const updated: Item = ensureItemPriceSources({
-      ...selectedItem,
-      metadata: nextMetadata,
-      updatedAt: new Date().toISOString(),
-    });
+    // Simulate re-pricing delay
+    setTimeout(() => {
+      const itemName = selectedItem.name;
+      const desc = selectedItem.description;
+      const revaluation = generateMockValuation(itemName, desc, selectedItem.category);
 
-    setAppData((prev) => ({
-      ...prev,
-      items: prev.items.map((it) => (it.id === updated.id ? updated : it)),
-    }));
-    setShowRefineModal(false);
-  }, [
-    selectedItem,
-    refineBrand,
-    refineModel,
-    refineVariant,
-    refineReference,
-    refineSizeMm,
-    refineDialColor,
-    refineBezelColor,
-    refineMaterial,
-    refineYear,
-  ]);
+      const updated: Item = ensureItemPriceSources({
+        ...selectedItem,
+        metadata: nextMetadata,
+        estimatedValue: revaluation.estimatedValue,
+        valueRange: revaluation.valueRange,
+        confidence: revaluation.confidence,
+        priceSources: revaluation.priceSources,
+        priceHistory: [
+          ...selectedItem.priceHistory,
+          { date: new Date().toISOString().split("T")[0], value: revaluation.estimatedValue },
+        ],
+        updatedAt: new Date().toISOString(),
+      });
+
+      setAppData((prev) => ({
+        ...prev,
+        items: prev.items.map((it) => (it.id === updated.id ? updated : it)),
+      }));
+      setIsRefining(false);
+      setShowRefineModal(false);
+    }, 1500);
+  }, [selectedItem, refineFields]);
 
   const styles = {
     container: { 
@@ -2044,9 +2152,12 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
               </div>
             )}
 
-            {showRefineModal && (
+            {showRefineModal && (() => {
+              const fieldDefs = getRefineFieldsForCategory(selectedItem.category);
+              const catName = CATEGORIES[selectedItem.category]?.name || "Item";
+              return (
               <div
-                onClick={() => setShowRefineModal(false)}
+                onClick={() => !isRefining && setShowRefineModal(false)}
                 style={{
                   position: "fixed",
                   inset: 0,
@@ -2067,10 +2178,34 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
                     borderRadius: 16,
                     padding: 16,
                     boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                    position: "relative",
+                    overflow: "hidden",
                   }}
                 >
+                  {isRefining && (
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      backgroundColor: "rgba(255,255,255,0.92)",
+                      display: "flex", flexDirection: "column",
+                      alignItems: "center", justifyContent: "center",
+                      zIndex: 10, borderRadius: 16,
+                    }}>
+                      <RefreshCw size={28} color={COLORS.primary} style={{
+                        animation: "spin 1s linear infinite",
+                      }} />
+                      <div style={{
+                        marginTop: 12, fontSize: 14, fontWeight: 700,
+                        color: COLORS.primary,
+                      }}>Checking new price...</div>
+                      <div style={{
+                        marginTop: 4, fontSize: 12, color: COLORS.textSecondary,
+                      }}>Updating valuation with your details</div>
+                      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                    </div>
+                  )}
+
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: COLORS.textMain }}>Refine your price</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: COLORS.textMain }}>Refine {catName} Price</div>
                     <button
                       onClick={() => setShowRefineModal(false)}
                       style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}
@@ -2080,24 +2215,25 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
                   </div>
 
                   <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 12, lineHeight: 1.4 }}>
-                    Add any details you know (especially model and reference number). This will improve the accuracy of the marketplace search links.
+                    Add details about your {catName.toLowerCase()} to get a more accurate valuation.
                   </div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                    <input placeholder="Brand (e.g. Omega)" value={refineBrand} onChange={(e) => setRefineBrand(e.target.value)} style={styles.input} />
-                    <input placeholder="Model (e.g. Seamaster)" value={refineModel} onChange={(e) => setRefineModel(e.target.value)} style={styles.input} />
-                    <input placeholder="Variant (e.g. Diver 300M)" value={refineVariant} onChange={(e) => setRefineVariant(e.target.value)} style={styles.input} />
-                    <input placeholder="Reference (e.g. 210.30.42.20.03.001)" value={refineReference} onChange={(e) => setRefineReference(e.target.value)} style={styles.input} />
-                    <input placeholder="Size mm (e.g. 42)" value={refineSizeMm} onChange={(e) => setRefineSizeMm(e.target.value)} style={styles.input} />
-                    <input placeholder="Year (e.g. 2019)" value={refineYear} onChange={(e) => setRefineYear(e.target.value)} style={styles.input} />
-                    <input placeholder="Dial color (e.g. blue)" value={refineDialColor} onChange={(e) => setRefineDialColor(e.target.value)} style={styles.input} />
-                    <input placeholder="Bezel color (e.g. blue)" value={refineBezelColor} onChange={(e) => setRefineBezelColor(e.target.value)} style={styles.input} />
-                    <input placeholder="Material (e.g. stainless steel)" value={refineMaterial} onChange={(e) => setRefineMaterial(e.target.value)} style={styles.input} />
+                    {fieldDefs.map((def) => (
+                      <input
+                        key={def.key}
+                        placeholder={`${def.label} (${def.placeholder})`}
+                        value={refineFields[def.key] || ""}
+                        onChange={(e) => setRefineFields(prev => ({ ...prev, [def.key]: e.target.value }))}
+                        style={styles.input}
+                      />
+                    ))}
                   </div>
 
                   <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
                     <button
                       onClick={() => setShowRefineModal(false)}
+                      disabled={isRefining}
                       style={{
                         flex: 1,
                         padding: "12px 14px",
@@ -2107,13 +2243,15 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
                         color: COLORS.textMain,
                         fontSize: 14,
                         fontWeight: 700,
-                        cursor: "pointer",
+                        cursor: isRefining ? "not-allowed" : "pointer",
+                        opacity: isRefining ? 0.5 : 1,
                       }}
                     >
                       Cancel
                     </button>
                     <button
                       onClick={applyRefine}
+                      disabled={isRefining}
                       style={{
                         flex: 1,
                         padding: "12px 14px",
@@ -2123,15 +2261,17 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
                         color: "white",
                         fontSize: 14,
                         fontWeight: 800,
-                        cursor: "pointer",
+                        cursor: isRefining ? "not-allowed" : "pointer",
+                        opacity: isRefining ? 0.5 : 1,
                       }}
                     >
-                      Update links
+                      Update Price
                     </button>
                   </div>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* Metadata */}
             {Object.keys(selectedItem.metadata).length > 0 && (
