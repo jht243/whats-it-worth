@@ -341,7 +341,7 @@ const toolInputParser = z.object({
 const tools: Tool[] = widgets.map((widget) => ({
   name: widget.id,
   description:
-    "Use this tool to find out what items are worth. Helps users get valuations for individual items or collections. Call this tool immediately with NO arguments to let the user enter their item details manually. Only provide arguments if the user has explicitly stated them.",
+    "Use this tool to find out what items are worth. Helps users get valuations for individual items or collections. Call this tool immediately with NO arguments to let the user enter their item details manually. Only provide arguments if the user has explicitly stated them. IMPORTANT: Do NOT pass placeholder values like 'Unknown', 'N/A', or 'none' for any field — simply omit the field instead. For trading cards, put the player name in item_name (e.g. 'LeBron James'), not in brand/model. For watches, put the brand (e.g. 'Rolex') in brand and the model (e.g. 'Submariner') in model. Always set item_name to a human-readable name for the item.",
   inputSchema: toolInputSchema,
   outputSchema: {
     type: "object",
@@ -498,8 +498,15 @@ function createWhatsItWorthServer(): Server {
         const userAgent = meta["openai/userAgent"];
         userAgentString = typeof userAgent === "string" ? userAgent : null;
         deviceCategory = classifyDevice(userAgentString);
-        
-        
+
+        // Strip placeholder values that ChatGPT sometimes passes instead of omitting
+        const PLACEHOLDER_RE = /^(unknown|n\/?a|none|null|undefined|not\s*specified|not\s*available|unspecified|\?)$/i;
+        for (const key of Object.keys(args) as (keyof typeof args)[]) {
+          const val = args[key];
+          if (typeof val === "string" && PLACEHOLDER_RE.test(val.trim())) {
+            delete args[key];
+          }
+        }
 
         // Infer item details from the structured arguments ChatGPT passed
         try {
@@ -868,6 +875,13 @@ function createWhatsItWorthServer(): Server {
           console.warn("Parameter inference from meta failed", e);
         }
 
+        // Ensure item_name is always set to a human-readable label
+        if (!args.item_name) {
+          const nameParts = [args.brand, args.model, args.variant].filter(Boolean);
+          if (nameParts.length > 0) {
+            args.item_name = nameParts.join(" ");
+          }
+        }
 
         const responseTime = Date.now() - startTime;
 

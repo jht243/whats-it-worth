@@ -24658,38 +24658,24 @@ var __iconNode13 = [
 ];
 var Plus = createLucideIcon("plus", __iconNode13);
 
-// node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/printer.js
-var __iconNode14 = [
-  [
-    "path",
-    {
-      d: "M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2",
-      key: "143wyd"
-    }
-  ],
-  ["path", { d: "M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6", key: "1itne7" }],
-  ["rect", { x: "6", y: "14", width: "12", height: "8", rx: "1", key: "1ue0tg" }]
-];
-var Printer = createLucideIcon("printer", __iconNode14);
-
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/refresh-cw.js
-var __iconNode15 = [
+var __iconNode14 = [
   ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
   ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
   ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
   ["path", { d: "M8 16H3v5", key: "1cv678" }]
 ];
-var RefreshCw = createLucideIcon("refresh-cw", __iconNode15);
+var RefreshCw = createLucideIcon("refresh-cw", __iconNode14);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/rotate-ccw.js
-var __iconNode16 = [
+var __iconNode15 = [
   ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
   ["path", { d: "M3 3v5h5", key: "1xhq8a" }]
 ];
-var RotateCcw = createLucideIcon("rotate-ccw", __iconNode16);
+var RotateCcw = createLucideIcon("rotate-ccw", __iconNode15);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/sparkles.js
-var __iconNode17 = [
+var __iconNode16 = [
   [
     "path",
     {
@@ -24701,34 +24687,34 @@ var __iconNode17 = [
   ["path", { d: "M22 4h-4", key: "gwowj6" }],
   ["circle", { cx: "4", cy: "20", r: "2", key: "6kqj1y" }]
 ];
-var Sparkles = createLucideIcon("sparkles", __iconNode17);
+var Sparkles = createLucideIcon("sparkles", __iconNode16);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/trash-2.js
-var __iconNode18 = [
+var __iconNode17 = [
   ["path", { d: "M10 11v6", key: "nco0om" }],
   ["path", { d: "M14 11v6", key: "outv1u" }],
   ["path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6", key: "miytrc" }],
   ["path", { d: "M3 6h18", key: "d0wm0j" }],
   ["path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2", key: "e791ji" }]
 ];
-var Trash2 = createLucideIcon("trash-2", __iconNode18);
+var Trash2 = createLucideIcon("trash-2", __iconNode17);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/trending-down.js
-var __iconNode19 = [
+var __iconNode18 = [
   ["path", { d: "M16 17h6v-6", key: "t6n2it" }],
   ["path", { d: "m22 17-8.5-8.5-5 5L2 7", key: "x473p" }]
 ];
-var TrendingDown = createLucideIcon("trending-down", __iconNode19);
+var TrendingDown = createLucideIcon("trending-down", __iconNode18);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/trending-up.js
-var __iconNode20 = [
+var __iconNode19 = [
   ["path", { d: "M16 7h6v6", key: "box55l" }],
   ["path", { d: "m22 7-8.5 8.5-5-5L2 17", key: "1t1m79" }]
 ];
-var TrendingUp = createLucideIcon("trending-up", __iconNode20);
+var TrendingUp = createLucideIcon("trending-up", __iconNode19);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/trophy.js
-var __iconNode21 = [
+var __iconNode20 = [
   ["path", { d: "M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978", key: "1n3hpd" }],
   ["path", { d: "M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978", key: "rfe1zi" }],
   ["path", { d: "M18 9h1.5a1 1 0 0 0 0-5H18", key: "7xy6bh" }],
@@ -24736,18 +24722,18 @@ var __iconNode21 = [
   ["path", { d: "M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z", key: "1mhfuq" }],
   ["path", { d: "M6 9H4.5a1 1 0 0 1 0-5H6", key: "tex48p" }]
 ];
-var Trophy = createLucideIcon("trophy", __iconNode21);
+var Trophy = createLucideIcon("trophy", __iconNode20);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/upload.js
-var __iconNode22 = [
+var __iconNode21 = [
   ["path", { d: "M12 3v12", key: "1x0j5s" }],
   ["path", { d: "m17 8-5-5-5 5", key: "7q97r8" }],
   ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }]
 ];
-var Upload = createLucideIcon("upload", __iconNode22);
+var Upload = createLucideIcon("upload", __iconNode21);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/watch.js
-var __iconNode23 = [
+var __iconNode22 = [
   ["path", { d: "M12 10v2.2l1.6 1", key: "n3r21l" }],
   [
     "path",
@@ -24756,14 +24742,14 @@ var __iconNode23 = [
   ["path", { d: "m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05", key: "16ny36" }],
   ["circle", { cx: "12", cy: "12", r: "6", key: "1vlfrh" }]
 ];
-var Watch = createLucideIcon("watch", __iconNode23);
+var Watch = createLucideIcon("watch", __iconNode22);
 
 // node_modules/.pnpm/lucide-react@0.554.0_react@18.3.1/node_modules/lucide-react/dist/esm/icons/x.js
-var __iconNode24 = [
+var __iconNode23 = [
   ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
   ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
 ];
-var X = createLucideIcon("x", __iconNode24);
+var X = createLucideIcon("x", __iconNode23);
 
 // src/WhatsItWorth.tsx
 var import_jsx_runtime = __toESM(require_jsx_runtime(), 1);
@@ -25725,7 +25711,18 @@ var VaultCard = ({ vault, items, onClick }) => {
     }
   );
 };
-function WhatsItWorth({ initialData: initialData2 }) {
+var PLACEHOLDER_RE = /^(unknown|n\/?a|none|null|undefined|not\s*specified|not\s*available|unspecified|\?)$/i;
+function sanitizeHydration(data) {
+  if (!data || typeof data !== "object") return data;
+  const cleaned = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (typeof v === "string" && PLACEHOLDER_RE.test(v.trim())) continue;
+    cleaned[k] = v;
+  }
+  return cleaned;
+}
+function WhatsItWorth({ initialData: rawInitialData }) {
+  const initialData2 = (0, import_react3.useMemo)(() => sanitizeHydration(rawInitialData), [rawInitialData]);
   const [appData, setAppData] = (0, import_react3.useState)(() => loadSavedData());
   const [view, setView] = (0, import_react3.useState)("dashboard");
   const [selectedVaultId, setSelectedVaultId] = (0, import_react3.useState)(null);
@@ -25767,8 +25764,9 @@ function WhatsItWorth({ initialData: initialData2 }) {
   });
   const [newItemName, setNewItemName] = (0, import_react3.useState)(() => {
     if (!initialData2) return "";
+    if (initialData2.item_name) return initialData2.item_name;
     const parts = [initialData2.brand, initialData2.model, initialData2.variant].filter(Boolean);
-    return parts.length > 0 ? parts.join(" ") : initialData2.item_name || "";
+    return parts.length > 0 ? parts.join(" ") : "";
   });
   const [newItemDescription, setNewItemDescription] = (0, import_react3.useState)(() => {
     return initialData2?.item_description || "";
@@ -25786,6 +25784,8 @@ function WhatsItWorth({ initialData: initialData2 }) {
   const [showFeedbackModal, setShowFeedbackModal] = (0, import_react3.useState)(false);
   const [feedbackText, setFeedbackText] = (0, import_react3.useState)("");
   const [feedbackStatus, setFeedbackStatus] = (0, import_react3.useState)("idle");
+  const [showResetConfirm, setShowResetConfirm] = (0, import_react3.useState)(false);
+  const [deleteConfirmId, setDeleteConfirmId] = (0, import_react3.useState)(null);
   (0, import_react3.useEffect)(() => {
     saveData(appData);
   }, [appData]);
@@ -25801,14 +25801,18 @@ function WhatsItWorth({ initialData: initialData2 }) {
     if (hasHydrated) return;
     if (!initialData2) return;
     const hasBrandModel = initialData2.brand && initialData2.model;
-    const hasSpecificItem = initialData2.item_name && initialData2.estimated_price;
-    const hasEnoughInfo = hasBrandModel || hasSpecificItem;
+    const hasBrand = !!initialData2.brand;
+    const hasItemName = !!initialData2.item_name;
+    const hasEnoughInfo = hasBrandModel || hasBrand || hasItemName;
     if (!hasEnoughInfo) {
+      console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
       setHasHydrated(true);
       return;
     }
+    console.log("[Hydration] Auto-creating item from initialData:", initialData2);
     setHasHydrated(true);
-    const itemName = [initialData2.brand, initialData2.model, initialData2.variant].filter(Boolean).join(" ") || initialData2.item_name || "Unknown Item";
+    const partsName = [initialData2.brand, initialData2.model, initialData2.variant].filter(Boolean).join(" ");
+    const itemName = initialData2.item_name || partsName || "Unknown Item";
     const category = initialData2.category || detectCategory(itemName + " " + (initialData2.item_description || ""));
     const metadata = {
       brand: initialData2.brand,
@@ -25866,8 +25870,7 @@ function WhatsItWorth({ initialData: initialData2 }) {
     trackEvent("hydration_auto_create", {
       category,
       value: estimatedValue,
-      hasBrandModel: !!hasBrandModel,
-      hasPrice: !!initialData2.estimated_price
+      hasBrandModel: !!hasBrandModel
     });
   }, [initialData2, hasHydrated]);
   const totalPortfolioValue = (0, import_react3.useMemo)(() => {
@@ -25939,7 +25942,11 @@ function WhatsItWorth({ initialData: initialData2 }) {
     trackEvent("add_item_complete", { category, value: newItem.estimatedValue });
   };
   const handleDeleteItem = (itemId) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+    setDeleteConfirmId(itemId);
+  };
+  const confirmDeleteItem = () => {
+    const itemId = deleteConfirmId;
+    if (!itemId) return;
     setAppData((prev) => ({
       ...prev,
       items: prev.items.filter((i) => i.id !== itemId),
@@ -25947,12 +25954,12 @@ function WhatsItWorth({ initialData: initialData2 }) {
         ...v,
         itemIds: v.itemIds.filter((id) => id !== itemId)
       })).filter((v) => v.itemIds.length > 0)
-      // Remove empty vaults
     }));
     if (selectedItemId === itemId) {
       setView("dashboard");
       setSelectedItemId(null);
     }
+    setDeleteConfirmId(null);
     trackEvent("delete_item");
   };
   const handleRefreshPrices = () => {
@@ -25978,13 +25985,16 @@ function WhatsItWorth({ initialData: initialData2 }) {
     trackEvent("refresh_prices");
   };
   const handleReset = () => {
-    if (!confirm("Are you sure you want to reset all data? This will delete all your items and vaults. This cannot be undone.")) return;
+    setShowResetConfirm(true);
+  };
+  const confirmReset = () => {
     resetAllData();
     setAppData(DEFAULT_DATA);
     setView("dashboard");
     setSelectedVaultId(null);
     setSelectedItemId(null);
     setShowBanner(true);
+    setShowResetConfirm(false);
     trackEvent("reset_data");
   };
   const handleDonate = () => {
@@ -26699,6 +26709,16 @@ function WhatsItWorth({ initialData: initialData2 }) {
               "Brand: ",
               selectedItem.metadata.brand
             ] }),
+            selectedItem.metadata.model && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: {
+              fontSize: 12,
+              padding: "6px 12px",
+              borderRadius: 8,
+              backgroundColor: COLORS.inputBg,
+              color: COLORS.textMain
+            }, children: [
+              "Model: ",
+              selectedItem.metadata.model
+            ] }),
             selectedItem.metadata.year && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { style: {
               fontSize: 12,
               padding: "6px 12px",
@@ -26859,12 +26879,130 @@ function WhatsItWorth({ initialData: initialData2 }) {
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => setShowFeedbackModal(true), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageSquare, { size: 16 }),
         " Feedback"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", { style: styles.footerBtn, onClick: () => window.print(), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Printer, { size: 16 }),
-        " Print"
       ] })
     ] }),
+    showResetConfirm && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      paddingTop: 40,
+      zIndex: 1e3
+    }, onClick: () => setShowResetConfirm(false), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      backgroundColor: "white",
+      borderRadius: 20,
+      padding: 24,
+      width: "90%",
+      maxWidth: 360,
+      textAlign: "center"
+    }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RotateCcw, { size: 32, color: COLORS.red, style: { marginBottom: 12 } }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { margin: "0 0 8px", fontSize: 18, fontWeight: 700 }, children: "Reset All Data?" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 }, children: "This will delete all your items and vaults. This cannot be undone." }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 12 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            onClick: () => setShowResetConfirm(false),
+            style: {
+              flex: 1,
+              padding: "12px 16px",
+              borderRadius: 12,
+              border: `1px solid ${COLORS.border}`,
+              background: "white",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer"
+            },
+            children: "Cancel"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            onClick: confirmReset,
+            style: {
+              flex: 1,
+              padding: "12px 16px",
+              borderRadius: 12,
+              border: "none",
+              background: COLORS.red,
+              color: "white",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer"
+            },
+            children: "Reset"
+          }
+        )
+      ] })
+    ] }) }),
+    deleteConfirmId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "center",
+      paddingTop: 40,
+      zIndex: 1e3
+    }, onClick: () => setDeleteConfirmId(null), children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: {
+      backgroundColor: "white",
+      borderRadius: 20,
+      padding: 24,
+      width: "90%",
+      maxWidth: 360,
+      textAlign: "center"
+    }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Trash2, { size: 32, color: COLORS.red, style: { marginBottom: 12 } }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { style: { margin: "0 0 8px", fontSize: 18, fontWeight: 700 }, children: "Delete Item?" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { style: { fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 }, children: "Are you sure you want to delete this item?" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { style: { display: "flex", gap: 12 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            onClick: () => setDeleteConfirmId(null),
+            style: {
+              flex: 1,
+              padding: "12px 16px",
+              borderRadius: 12,
+              border: `1px solid ${COLORS.border}`,
+              background: "white",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer"
+            },
+            children: "Cancel"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            onClick: confirmDeleteItem,
+            style: {
+              flex: 1,
+              padding: "12px 16px",
+              borderRadius: 12,
+              border: "none",
+              background: COLORS.red,
+              color: "white",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer"
+            },
+            children: "Delete"
+          }
+        )
+      ] })
+    ] }) }),
     showFeedbackModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { style: {
       position: "fixed",
       top: 0,
@@ -26971,7 +27109,15 @@ var ErrorBoundary = class extends import_react4.default.Component {
     if (this.state.hasError) {
       return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626", wordBreak: "break-word" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { children: "Something went wrong." }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." })
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("details", { style: { marginTop: 10, textAlign: "left", fontSize: "12px", color: "#666" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("summary", { children: "Debug Error Details" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("pre", { style: { whiteSpace: "pre-wrap", background: "#f5f5f5", padding: 10, borderRadius: 4 }, children: [
+            this.state.error?.toString(),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("br", {}),
+            this.state.error?.stack
+          ] })
+        ] })
       ] });
     }
     return this.props.children;
@@ -27227,14 +27373,6 @@ lucide-react/dist/esm/icons/package.js:
    *)
 
 lucide-react/dist/esm/icons/plus.js:
-  (**
-   * @license lucide-react v0.554.0 - ISC
-   *
-   * This source code is licensed under the ISC license.
-   * See the LICENSE file in the root directory of this source tree.
-   *)
-
-lucide-react/dist/esm/icons/printer.js:
   (**
    * @license lucide-react v0.554.0 - ISC
    *

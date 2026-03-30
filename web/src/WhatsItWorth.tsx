@@ -1126,7 +1126,19 @@ const VaultCard = ({ vault, items, onClick }: {
 
 // ============ MAIN COMPONENT ============
 
-export default function WhatsItWorth({ initialData }: { initialData?: any }) {
+const PLACEHOLDER_RE = /^(unknown|n\/?a|none|null|undefined|not\s*specified|not\s*available|unspecified|\?)$/i;
+function sanitizeHydration(data: any): any {
+  if (!data || typeof data !== "object") return data;
+  const cleaned: any = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (typeof v === "string" && PLACEHOLDER_RE.test(v.trim())) continue;
+    cleaned[k] = v;
+  }
+  return cleaned;
+}
+
+export default function WhatsItWorth({ initialData: rawInitialData }: { initialData?: any }) {
+  const initialData = useMemo(() => sanitizeHydration(rawInitialData), [rawInitialData]);
   const [appData, setAppData] = useState<AppData>(() => loadSavedData());
   const [view, setView] = useState<"dashboard" | "vault" | "item" | "add">("dashboard");
   const [selectedVaultId, setSelectedVaultId] = useState<string | null>(null);
@@ -1175,9 +1187,9 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
   // Add item form state - pre-fill from ChatGPT data
   const [newItemName, setNewItemName] = useState(() => {
     if (!initialData) return "";
-    // Build a sensible default name from ChatGPT data
+    if (initialData.item_name) return initialData.item_name;
     const parts = [initialData.brand, initialData.model, initialData.variant].filter(Boolean);
-    return parts.length > 0 ? parts.join(" ") : (initialData.item_name || "");
+    return parts.length > 0 ? parts.join(" ") : "";
   });
   const [newItemDescription, setNewItemDescription] = useState(() => {
     return initialData?.item_description || "";
@@ -1195,6 +1207,8 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Save data on change
   useEffect(() => {
@@ -1216,10 +1230,10 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
     if (!initialData) return;
     
     // Check if we have enough specific information to auto-create an item
-    // Need at least brand+model, or a specific item_name with pricing
     const hasBrandModel = initialData.brand && initialData.model;
-    const hasSpecificItem = initialData.item_name && initialData.estimated_price;
-    const hasEnoughInfo = hasBrandModel || hasSpecificItem;
+    const hasBrand = !!initialData.brand;
+    const hasItemName = !!initialData.item_name;
+    const hasEnoughInfo = hasBrandModel || hasBrand || hasItemName;
     
     if (!hasEnoughInfo) {
       console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
@@ -1230,10 +1244,11 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
     console.log("[Hydration] Auto-creating item from initialData:", initialData);
     setHasHydrated(true);
 
-    // Build item name from available data
-    const itemName = [initialData.brand, initialData.model, initialData.variant]
+    // Build item name: prefer item_name from server, fall back to brand/model/variant
+    const partsName = [initialData.brand, initialData.model, initialData.variant]
       .filter(Boolean)
-      .join(" ") || initialData.item_name || "Unknown Item";
+      .join(" ");
+    const itemName = initialData.item_name || partsName || "Unknown Item";
 
     // Determine category
     const category = initialData.category || detectCategory(itemName + " " + (initialData.item_description || ""));
@@ -1310,8 +1325,7 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
     trackEvent("hydration_auto_create", { 
       category, 
       value: estimatedValue,
-      hasBrandModel: !!hasBrandModel,
-      hasPrice: !!initialData.estimated_price 
+      hasBrandModel: !!hasBrandModel
     });
   }, [initialData, hasHydrated]);
 
@@ -1412,15 +1426,20 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
 
   // Delete item
   const handleDeleteItem = (itemId: string) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
-    
+    setDeleteConfirmId(itemId);
+  };
+
+  const confirmDeleteItem = () => {
+    const itemId = deleteConfirmId;
+    if (!itemId) return;
+
     setAppData(prev => ({
       ...prev,
       items: prev.items.filter(i => i.id !== itemId),
       vaults: prev.vaults.map(v => ({
         ...v,
         itemIds: v.itemIds.filter(id => id !== itemId)
-      })).filter(v => v.itemIds.length > 0) // Remove empty vaults
+      })).filter(v => v.itemIds.length > 0)
     }));
 
     if (selectedItemId === itemId) {
@@ -1428,6 +1447,7 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
       setSelectedItemId(null);
     }
 
+    setDeleteConfirmId(null);
     trackEvent("delete_item");
   };
 
@@ -1458,13 +1478,17 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
 
   // Reset all data
   const handleReset = () => {
-    if (!confirm("Are you sure you want to reset all data? This will delete all your items and vaults. This cannot be undone.")) return;
+    setShowResetConfirm(true);
+  };
+
+  const confirmReset = () => {
     resetAllData();
     setAppData(DEFAULT_DATA);
     setView("dashboard");
     setSelectedVaultId(null);
     setSelectedItemId(null);
     setShowBanner(true);
+    setShowResetConfirm(false);
     trackEvent("reset_data");
   };
 
@@ -2124,6 +2148,14 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
                       Brand: {selectedItem.metadata.brand}
                     </span>
                   )}
+                  {selectedItem.metadata.model && (
+                    <span style={{ 
+                      fontSize: 12, padding: "6px 12px", borderRadius: 8,
+                      backgroundColor: COLORS.inputBg, color: COLORS.textMain
+                    }}>
+                      Model: {selectedItem.metadata.model}
+                    </span>
+                  )}
                   {selectedItem.metadata.year && (
                     <span style={{ 
                       fontSize: 12, padding: "6px 12px", borderRadius: 8,
@@ -2268,10 +2300,86 @@ export default function WhatsItWorth({ initialData }: { initialData?: any }) {
         <button style={styles.footerBtn} onClick={() => setShowFeedbackModal(true)}>
           <MessageSquare size={16} /> Feedback
         </button>
-        <button style={styles.footerBtn} onClick={() => window.print()}>
+        {/* <button style={styles.footerBtn} onClick={() => window.print()}>
           <Printer size={16} /> Print
-        </button>
+        </button> */}
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+          alignItems: "flex-start", justifyContent: "center", paddingTop: 40, zIndex: 1000
+        }} onClick={() => setShowResetConfirm(false)}>
+          <div style={{
+            backgroundColor: "white", borderRadius: 20, padding: 24,
+            width: "90%", maxWidth: 360, textAlign: "center"
+          }} onClick={e => e.stopPropagation()}>
+            <RotateCcw size={32} color={COLORS.red} style={{ marginBottom: 12 }} />
+            <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 700 }}>Reset All Data?</h3>
+            <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 }}>
+              This will delete all your items and vaults. This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                style={{
+                  flex: 1, padding: "12px 16px", borderRadius: 12,
+                  border: `1px solid ${COLORS.border}`, background: "white",
+                  fontSize: 14, fontWeight: 600, cursor: "pointer"
+                }}
+              >Cancel</button>
+              <button
+                onClick={confirmReset}
+                style={{
+                  flex: 1, padding: "12px 16px", borderRadius: 12,
+                  border: "none", background: COLORS.red, color: "white",
+                  fontSize: 14, fontWeight: 600, cursor: "pointer"
+                }}
+              >Reset</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Item Confirmation Modal */}
+      {deleteConfirmId && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.5)", display: "flex",
+          alignItems: "flex-start", justifyContent: "center", paddingTop: 40, zIndex: 1000
+        }} onClick={() => setDeleteConfirmId(null)}>
+          <div style={{
+            backgroundColor: "white", borderRadius: 20, padding: 24,
+            width: "90%", maxWidth: 360, textAlign: "center"
+          }} onClick={e => e.stopPropagation()}>
+            <Trash2 size={32} color={COLORS.red} style={{ marginBottom: 12 }} />
+            <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 700 }}>Delete Item?</h3>
+            <p style={{ fontSize: 14, color: COLORS.textSecondary, marginBottom: 20 }}>
+              Are you sure you want to delete this item?
+            </p>
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                style={{
+                  flex: 1, padding: "12px 16px", borderRadius: 12,
+                  border: `1px solid ${COLORS.border}`, background: "white",
+                  fontSize: 14, fontWeight: 600, cursor: "pointer"
+                }}
+              >Cancel</button>
+              <button
+                onClick={confirmDeleteItem}
+                style={{
+                  flex: 1, padding: "12px 16px", borderRadius: 12,
+                  border: "none", background: COLORS.red, color: "white",
+                  fontSize: 14, fontWeight: 600, cursor: "pointer"
+                }}
+              >Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Feedback Modal */}
       {showFeedbackModal && (
