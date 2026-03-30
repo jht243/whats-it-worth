@@ -27305,31 +27305,38 @@ if (!container) {
   throw new Error("whats-it-worth-root element not found");
 }
 var root = (0, import_client.createRoot)(container);
+var renderedData = null;
 var renderApp = (data) => {
+  renderedData = data;
   root.render(
-    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_react4.default.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ErrorBoundary, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(App, { initialData: data }, Date.now()) }) })
+    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(import_react4.default.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ErrorBoundary, { children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(App, { initialData: data }) }) })
   );
 };
+function hasNewData(candidate) {
+  if (!candidate || typeof candidate !== "object" || Object.keys(candidate).length === 0) return false;
+  if (!renderedData || Object.keys(renderedData).length === 0) return true;
+  return (candidate.item_name ?? "") !== (renderedData.item_name ?? "") || (candidate.brand ?? "") !== (renderedData.brand ?? "") || (candidate.model ?? "") !== (renderedData.model ?? "") || (candidate.category ?? "") !== (renderedData.category ?? "");
+}
 var initialData = getHydrationData();
 renderApp(initialData);
 window.addEventListener("openai:set_globals", (ev) => {
   const globals = ev?.detail?.globals;
-  if (globals) {
-    console.log("[Hydration] Late event received:", globals);
-    const candidates = [
-      globals.toolOutput,
-      globals.structuredContent,
-      globals.result?.structuredContent,
-      globals.toolInput
-    ];
-    for (const candidate of candidates) {
-      if (candidate && typeof candidate === "object" && Object.keys(candidate).length > 0) {
-        console.log("[Hydration] Re-rendering with late data:", candidate);
-        renderApp(candidate);
-        return;
-      }
+  if (!globals) return;
+  console.log("[Hydration] Late event received:", Object.keys(globals));
+  const candidates = [
+    globals.toolOutput,
+    globals.structuredContent,
+    globals.result?.structuredContent,
+    globals.toolInput
+  ];
+  for (const candidate of candidates) {
+    if (hasNewData(candidate)) {
+      console.log("[Hydration] Re-rendering with new late data");
+      renderApp(candidate);
+      return;
     }
   }
+  console.log("[Hydration] Late event data matches current render, skipping");
 });
 /*! Bundled license information:
 

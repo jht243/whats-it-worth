@@ -123,15 +123,28 @@ if (!container) {
 
 const root = createRoot(container);
 
+let renderedData: any = null;
+
 const renderApp = (data: any) => {
+  renderedData = data;
   root.render(
     <React.StrictMode>
       <ErrorBoundary>
-        <App key={Date.now()} initialData={data} />
+        <App initialData={data} />
       </ErrorBoundary>
     </React.StrictMode>
   );
 };
+
+function hasNewData(candidate: any): boolean {
+  if (!candidate || typeof candidate !== "object" || Object.keys(candidate).length === 0) return false;
+  if (!renderedData || Object.keys(renderedData).length === 0) return true;
+  // Only re-render if the data is materially different (different item)
+  return (candidate.item_name ?? "") !== (renderedData.item_name ?? "") ||
+         (candidate.brand ?? "") !== (renderedData.brand ?? "") ||
+         (candidate.model ?? "") !== (renderedData.model ?? "") ||
+         (candidate.category ?? "") !== (renderedData.category ?? "");
+}
 
 // Initial render
 const initialData = getHydrationData();
@@ -140,24 +153,22 @@ renderApp(initialData);
 // Listen for late hydration events (Apps SDK pattern)
 window.addEventListener('openai:set_globals', (ev: any) => {
   const globals = ev?.detail?.globals;
-  if (globals) {
-    console.log("[Hydration] Late event received:", globals);
-    
-    // Extract data from the event globals similar to getHydrationData
-    const candidates = [
-      globals.toolOutput,
-      globals.structuredContent,
-      globals.result?.structuredContent,
-      globals.toolInput
-    ];
-    
-    for (const candidate of candidates) {
-       if (candidate && typeof candidate === 'object' && Object.keys(candidate).length > 0) {
-          console.log("[Hydration] Re-rendering with late data:", candidate);
-          // Force re-mount by changing key, ensuring initialData is applied fresh
-          renderApp(candidate);
-          return;
-       }
+  if (!globals) return;
+  console.log("[Hydration] Late event received:", Object.keys(globals));
+
+  const candidates = [
+    globals.toolOutput,
+    globals.structuredContent,
+    globals.result?.structuredContent,
+    globals.toolInput
+  ];
+
+  for (const candidate of candidates) {
+    if (hasNewData(candidate)) {
+      console.log("[Hydration] Re-rendering with new late data");
+      renderApp(candidate);
+      return;
     }
   }
+  console.log("[Hydration] Late event data matches current render, skipping");
 });
