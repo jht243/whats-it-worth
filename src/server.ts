@@ -87,6 +87,27 @@ function logAnalytics(event: string, data: Record<string, any> = {}) {
   fs.appendFileSync(logFile, logLine + "\n");
 }
 
+const pendingAnalytics: AnalyticsEvent[] = [];
+
+function deferAnalytics(event: string, data: Record<string, any> = {}) {
+  pendingAnalytics.push({
+    timestamp: new Date().toISOString(),
+    event,
+    ...data,
+  });
+}
+
+function flushAnalytics() {
+  while (pendingAnalytics.length > 0) {
+    const entry = pendingAnalytics.shift()!;
+    const logLine = JSON.stringify(entry);
+    console.log(logLine);
+    const today = entry.timestamp.split("T")[0];
+    const logFile = path.join(LOGS_DIR, `${today}.log`);
+    fs.appendFileSync(logFile, logLine + "\n");
+  }
+}
+
 function getRecentLogs(days: number = 7): AnalyticsEvent[] {
   const logs: AnalyticsEvent[] = [];
   const now = new Date();
@@ -326,10 +347,8 @@ const tools: Tool[] = widgets.map((widget) => ({
     type: "object",
     properties: {
       ready: { type: "boolean" },
-      timestamp: { type: "string" },
       item_name: { type: "string" },
       category: { type: "string" },
-      input_source: { type: "string", enum: ["user", "default"] },
       summary: {
         type: "object",
         properties: {
@@ -448,14 +467,12 @@ function createWhatsItWorthServer(): Server {
       let userAgentString: string | null = null;
       let deviceCategory = "Unknown";
       
-      // Log the full request to debug _meta location
-      console.log("Full request object:", JSON.stringify(request, null, 2));
       
       try {
         const widget = widgetsById.get(request.params.name);
 
         if (!widget) {
-          logAnalytics("tool_call_error", {
+          deferAnalytics("tool_call_error", {
             error: "Unknown tool",
             toolName: request.params.name,
           });
@@ -467,9 +484,8 @@ function createWhatsItWorthServer(): Server {
         try {
           args = toolInputParser.parse(request.params.arguments ?? {});
         } catch (parseError: any) {
-          logAnalytics("parameter_parse_error", {
+          deferAnalytics("parameter_parse_error", {
             toolName: request.params.name,
-            params: request.params.arguments,
             error: parseError.message,
           });
           throw parseError;
@@ -483,20 +499,11 @@ function createWhatsItWorthServer(): Server {
         userAgentString = typeof userAgent === "string" ? userAgent : null;
         deviceCategory = classifyDevice(userAgentString);
         
-        // Debug log
-        console.log("Captured meta:", { userLocation, userLocale, userAgent });
+        
 
-        // If ChatGPT didn't pass structured arguments, try to infer item details from freeform text in meta
+        // Infer item details from the structured arguments ChatGPT passed
         try {
-          const candidates: any[] = [
-            meta["openai/subject"],
-            meta["openai/userPrompt"],
-            meta["openai/userText"],
-            meta["openai/lastUserMessage"],
-            meta["openai/inputText"],
-            meta["openai/requestText"],
-          ];
-          const userText = candidates.find((t) => typeof t === "string" && t.trim().length > 0) || "";
+          const userText = [args.item_name, args.item_description].filter(Boolean).join(" ");
 
           // Infer watch brand from user text
           if (!args.brand) {
@@ -875,25 +882,6 @@ function createWhatsItWorthServer(): Server {
         if (args.reference) inferredQuery.push(`Ref: ${args.reference}`);
         if (args.category) inferredQuery.push(`Category: ${args.category}`);
 
-        logAnalytics("tool_call_success", {
-          toolName: request.params.name,
-          params: args,
-          inferredQuery: inferredQuery.length > 0 ? inferredQuery.join(", ") : "What's It Worth",
-          responseTime,
-
-          device: deviceCategory,
-          userLocation: userLocation
-            ? {
-                city: userLocation.city,
-                region: userLocation.region,
-                country: userLocation.country,
-                timezone: userLocation.timezone,
-              }
-            : null,
-          userLocale,
-          userAgent,
-        });
-
         // Use a stable template URI so toolOutput reliably hydrates the component
         const widgetMetadata = widgetMeta(widget, false);
         console.log(`[MCP] Tool called: ${request.params.name}, returning templateUri: ${(widgetMetadata as any)["openai/outputTemplate"]}`);
@@ -902,10 +890,7 @@ function createWhatsItWorthServer(): Server {
         // For the valuation widget, expose fields relevant to item details
         const structured = {
           ready: true,
-          timestamp: new Date().toISOString(),
           ...args,
-          input_source: usedDefaults ? "default" : "user",
-          // Summary + follow-ups for natural language UX
           summary: computeSummary(args),
           suggested_followups: [
             "How did you determine this value?",
@@ -938,19 +923,18 @@ function createWhatsItWorthServer(): Server {
           const hasMainInputs = args.brand || args.model || args.item_name || args.category;
           
           if (!hasMainInputs) {
-             logAnalytics("tool_call_empty", {
+             deferAnalytics("tool_call_empty", {
                toolName: request.params.name,
-               params: request.params.arguments || {},
+               category: args.category || null,
                reason: "No item details provided"
              });
           } else {
-          logAnalytics("tool_call_success", {
+          deferAnalytics("tool_call_success", {
             responseTime,
-            params: request.params.arguments || {},
+            category: args.category || null,
             inferredQuery: inferredQuery.join(", "),
-            userLocation,
-            userLocale,
             device: deviceCategory,
+            country: userLocation?.country || null,
           });
           }
         } catch {}
@@ -964,12 +948,10 @@ function createWhatsItWorthServer(): Server {
           _meta: metaForReturn,  // Contains openai/resultCanProduceWidget: true
         };
       } catch (error: any) {
-        logAnalytics("tool_call_error", {
+        deferAnalytics("tool_call_error", {
           error: error.message,
-          stack: error.stack,
           responseTime: Date.now() - startTime,
           device: deviceCategory,
-          userAgent: userAgentString,
         });
         throw error;
       }
@@ -1786,7 +1768,6 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
           });
           logAnalytics("widget_notify_me_subscribe_error", {
             stage: "update",
-            email,
             error: updateError?.message,
           });
           res.writeHead(200).end(JSON.stringify({
@@ -1799,7 +1780,6 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
 
       logAnalytics("widget_notify_me_subscribe_error", {
         stage: "subscribe",
-        email,
         error: rawMessage || "unknown_error",
       });
       throw subscribeError;
@@ -1810,7 +1790,6 @@ async function handleSubscribe(req: IncomingMessage, res: ServerResponse) {
     console.error("Error stack:", error.stack);
     logAnalytics("widget_notify_me_subscribe_error", {
       stage: "handler",
-      email: undefined,
       error: error.message || "unknown_error",
     });
     res.writeHead(500).end(JSON.stringify({ 
@@ -1889,6 +1868,8 @@ async function handlePostMessage(
       res.writeHead(500).end("Failed to process message");
     }
   }
+
+  setImmediate(flushAnalytics);
 }
 
 const portEnv = Number(process.env.PORT ?? 8000);

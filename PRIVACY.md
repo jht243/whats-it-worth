@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **What's It Worth**  
-*Last Updated: December 2024*
+*Last Updated: March 2026*
 
 ## Overview
 
@@ -10,17 +10,24 @@ What's It Worth is an item valuation tool that runs entirely in your browser wit
 ## Data Collection
 
 ### What We Collect
+
 - **Usage Analytics**: Anonymous usage data including tool invocations, response times, and general device categories (iOS, Android, Desktop)
+- **Coarse Location**: Country-level location derived from ChatGPT's client metadata, used solely for analytics
+- **Item Details**: Category-level information about items submitted for valuation (e.g., "watches," "trading cards") for service improvement. Specific item details (brand, model, condition) are processed client-side and are not stored on our servers beyond aggregate category counts
+- **User Feedback**: Feedback text voluntarily submitted through the in-app feedback form
+- **Email Address**: Only if you voluntarily subscribe to notifications via the in-app subscribe feature. Used solely to send valuation tips and updates via Buttondown (our email provider)
 - **Session Data**: Temporary session identifiers for MCP connection management
-- **Error Logs**: Anonymous error information to improve reliability
+- **Error Logs**: Anonymous error information (error type and device category) to improve reliability
 
 ### What We Do NOT Collect
-- Personal identification information (name, email, address)
+
+- Names, physical addresses, or government-issued IDs
 - Financial account credentials or banking information
-- Social Security Numbers or government IDs
 - Credit card or payment information
 - Health information
-- Precise location data
+- Precise location data (GPS coordinates or street addresses)
+- Full user agent strings or browser fingerprints
+- Chat history, conversation transcripts, or raw user prompts
 
 ## Data Processing
 
@@ -32,23 +39,26 @@ All item valuation is performed:
 ## Data Storage
 
 - **Browser LocalStorage**: Your item details may be cached in your browser's localStorage for convenience (30-day expiration). This data never leaves your device.
-- **Server Logs**: Anonymous analytics are logged for up to 30 days for service improvement.
+- **Server Logs**: Anonymous analytics (device category, country, item category, response time) are logged for up to 30 days for service improvement.
 
-## Third-Party Sharing
+## Third-Party Services
 
-We do not sell, rent, or share your data with third parties for marketing purposes. Anonymous, aggregated analytics may be used to improve the service.
+- **Buttondown** (email): If you subscribe to notifications, your email address is shared with Buttondown to deliver updates. See [Buttondown's Privacy Policy](https://buttondown.email/legal/privacy).
+- We do not sell, rent, or share your data with third parties for marketing or advertising purposes.
 
 ## Data Retention
 
 - **LocalStorage**: Automatically expires after 30 days
 - **Server Logs**: Retained for up to 30 days, then deleted
+- **Email Subscriptions**: Managed through Buttondown; you can unsubscribe at any time
 
 ## Your Rights
 
 You can:
 - Clear your browser's localStorage at any time to remove cached data
 - Use the tool without providing any personal information
-- Contact us with privacy concerns
+- Unsubscribe from email notifications at any time
+- Request deletion of your data by contacting us
 
 ## Security
 

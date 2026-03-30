@@ -25804,11 +25804,9 @@ function WhatsItWorth({ initialData: initialData2 }) {
     const hasSpecificItem = initialData2.item_name && initialData2.estimated_price;
     const hasEnoughInfo = hasBrandModel || hasSpecificItem;
     if (!hasEnoughInfo) {
-      console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
       setHasHydrated(true);
       return;
     }
-    console.log("[Hydration] Auto-creating item from initialData:", initialData2);
     setHasHydrated(true);
     const itemName = [initialData2.brand, initialData2.model, initialData2.variant].filter(Boolean).join(" ") || initialData2.item_name || "Unknown Item";
     const category = initialData2.category || detectCategory(itemName + " " + (initialData2.item_description || ""));
@@ -26973,15 +26971,7 @@ var ErrorBoundary = class extends import_react4.default.Component {
     if (this.state.hasError) {
       return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { style: { padding: 20, textAlign: "center", fontFamily: "sans-serif", color: "#DC2626", wordBreak: "break-word" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { children: "Something went wrong." }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." }),
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("details", { style: { marginTop: 10, textAlign: "left", fontSize: "12px", color: "#666" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("summary", { children: "Debug Error Details" }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("pre", { style: { whiteSpace: "pre-wrap", background: "#f5f5f5", padding: 10, borderRadius: 4 }, children: [
-            this.state.error?.toString(),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("br", {}),
-            this.state.error?.stack
-          ] })
-        ] })
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { children: "Please try refreshing the page." })
       ] });
     }
     return this.props.children;
