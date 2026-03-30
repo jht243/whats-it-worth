@@ -1314,7 +1314,7 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
   const hydrationRan = useRef(false);
   useEffect(() => {
     if (hydrationRan.current) return;
-    if (!initialData) return;
+    if (!initialData || Object.keys(initialData).length === 0) return;
     
     const hasBrandModel = initialData.brand && initialData.model;
     const hasBrand = !!initialData.brand;
@@ -1323,7 +1323,6 @@ export default function WhatsItWorth({ initialData: rawInitialData }: { initialD
     
     if (!hasEnoughInfo) {
       console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
-      hydrationRan.current = true;
       return;
     }
 

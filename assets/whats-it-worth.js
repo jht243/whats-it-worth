@@ -25879,14 +25879,13 @@ function WhatsItWorth({ initialData: rawInitialData }) {
   const hydrationRan = (0, import_react3.useRef)(false);
   (0, import_react3.useEffect)(() => {
     if (hydrationRan.current) return;
-    if (!initialData2) return;
+    if (!initialData2 || Object.keys(initialData2).length === 0) return;
     const hasBrandModel = initialData2.brand && initialData2.model;
     const hasBrand = !!initialData2.brand;
     const hasItemName = !!initialData2.item_name;
     const hasEnoughInfo = hasBrandModel || hasBrand || hasItemName;
     if (!hasEnoughInfo) {
       console.log("[Hydration] Not enough specific info to auto-create item, showing dashboard");
-      hydrationRan.current = true;
       return;
     }
     hydrationRan.current = true;
